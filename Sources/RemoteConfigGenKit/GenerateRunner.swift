@@ -11,9 +11,8 @@ public struct GenerateRunner: Sendable {
         self.workingDirectory = workingDirectory
     }
 
-    /// config.yml読込からファイル書き出しまでを一通り実行し、書き出したファイルのURLを返す。
-    @discardableResult
-    public func run() async throws -> [URL] {
+    /// config.yml読込からファイル書き出しまでを一通り実行する。
+    public func run() async throws -> GenerateResult {
         let config = try configLoader.load(from: workingDirectory)
         let templatePath = workingDirectory.appending(path: config.input.remoteConfigJSON)
         let template = try templateLoader.load(from: templatePath)
@@ -21,6 +20,7 @@ public struct GenerateRunner: Sendable {
         let generatedFiles = generatedFiles(from: template, config: config)
 
         let outputDirectory = workingDirectory.appending(path: config.output.directory)
+        var writtenFiles: [URL] = []
         for file in generatedFiles {
             let destination = outputDirectory.appending(path: file.fileName)
             try FileManager.default.createDirectory(
@@ -28,9 +28,10 @@ public struct GenerateRunner: Sendable {
                 withIntermediateDirectories: true,
             )
             try file.source.write(to: destination, atomically: true, encoding: .utf8)
+            writtenFiles.append(destination)
         }
 
-        return generatedFiles.map { outputDirectory.appending(path: $0.fileName) }
+        return GenerateResult(parameterCount: template.parameters.count, writtenFiles: writtenFiles)
     }
 
     /// config.ymlとRemote Configテンプレートから、書き出すべき生成コードを計算する（ファイルI/Oは行わない）。
@@ -79,4 +80,13 @@ public struct GenerateRunner: Sendable {
 
         return result
     }
+}
+
+/// `GenerateRunner.run()`の結果。テンプレートに含まれていたparameter総数と、実際に書き出したファイルを両方持つ。
+/// parameter数を別途持つのは、0件生成時に「設定ミスで空なのか、意図通り0件なのか」をCLI側で区別できるようにするため。
+public struct GenerateResult: Equatable, Sendable {
+    /// Remote Configテンプレートに含まれていたparameterの総数。
+    public let parameterCount: Int
+    /// 実際に書き出したファイルのURL一覧。
+    public let writtenFiles: [URL]
 }

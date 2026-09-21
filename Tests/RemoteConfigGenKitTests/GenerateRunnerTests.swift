@@ -46,7 +46,9 @@ struct GenerateRunnerTests {
         }
         """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
 
-        try await GenerateRunner(workingDirectory: workingDirectory).run()
+        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+        #expect(result.parameterCount == 3)
+        #expect(result.writtenFiles.count == 2)
 
         let generatedDirectory = workingDirectory.appending(path: "Generated")
         let flagSourceURL = generatedDirectory.appending(path: "FeatureFlag.swift")
@@ -86,13 +88,40 @@ struct GenerateRunnerTests {
         }
         """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
 
-        try await GenerateRunner(workingDirectory: workingDirectory).run()
+        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+        #expect(result.parameterCount == 1)
+        #expect(result.writtenFiles.count == 1)
 
         let generatedDirectory = workingDirectory.appending(path: "Generated")
         let flagPath = generatedDirectory.appending(path: "FeatureFlag.swift").path()
         let keysPath = generatedDirectory.appending(path: "RemoteConfigKeys.swift").path()
         #expect(!FileManager.default.fileExists(atPath: flagPath))
         #expect(FileManager.default.fileExists(atPath: keysPath))
+    }
+
+    @Test("reports the parameter count even when nothing is generated")
+    func reportsParameterCountWhenTemplateIsEmpty() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input:
+          remote_config_json: "remoteconfig.json"
+        output:
+          directory: "Generated"
+        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {},
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+        #expect(result.parameterCount == 0)
+        #expect(result.writtenFiles.isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: workingDirectory.appending(path: "Generated").path()))
     }
 
     @Test("missing remote config template throws remoteConfigTemplateNotFound")

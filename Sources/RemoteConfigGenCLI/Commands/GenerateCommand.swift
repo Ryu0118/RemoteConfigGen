@@ -16,9 +16,16 @@ extension RemoteConfigGenCommand {
         func run() async throws {
             let logger = Logger(label: "com.ryu0118.remoteconfiggen")
             let workingDirectory = URL(filePath: configDirectory ?? FileManager.default.currentDirectoryPath)
-            let writtenFiles = try await GenerateRunner(workingDirectory: workingDirectory).run()
-            for file in writtenFiles {
-                logger.info("Generated \(file.path())")
+            let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+
+            if result.writtenFiles.isEmpty {
+                let message = "Read \(result.parameterCount) parameter(s) from the Remote Config template, "
+                    + "but generated no files."
+                logger.warning("\(message)")
+            } else {
+                for file in result.writtenFiles {
+                    logger.info("Generated \(file.path())")
+                }
             }
         }
     }
