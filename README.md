@@ -31,6 +31,7 @@ parameter is a compile error, not a runtime surprise.
 ## Table of Contents
 
 - [Installation](#installation)
+  - [Other methods](#other-methods)
 - [Quick Start](#quick-start)
 - [config.yml Reference](#configyml-reference)
 - [What gets generated](#what-gets-generated)
@@ -40,19 +41,49 @@ parameter is a compile error, not a runtime surprise.
 
 ## Installation
 
+```sh
+curl -fsSL https://raw.githubusercontent.com/Ryu0118/RemoteConfigGen/main/install.sh | bash
+```
+
+To update, run the same command. It skips the download if already up-to-date.
+
+```sh
+# Install a specific version
+curl -fsSL https://raw.githubusercontent.com/Ryu0118/RemoteConfigGen/main/install.sh | VERSION=0.1.0 bash
+
+# Force reinstall
+curl -fsSL https://raw.githubusercontent.com/Ryu0118/RemoteConfigGen/main/install.sh | FORCE=1 bash
+```
+
+### Other methods
+
+#### Nest ([mtj0928/nest](https://github.com/mtj0928/nest))
+
+```sh
+nest install Ryu0118/RemoteConfigGen
+```
+
+#### Mise ([jdx/mise](https://github.com/jdx/mise))
+
+```sh
+mise use -g github:Ryu0118/RemoteConfigGen
+```
+
+#### Build from source
+
 Requires **macOS 26+** and **Swift 6.4**.
 
 ```sh
 git clone https://github.com/Ryu0118/RemoteConfigGen.git
 cd RemoteConfigGen
 swift build -c release
-cp .build/release/RemoteConfigGen /usr/local/bin/RemoteConfigGen
+cp .build/release/remote-config-gen /usr/local/bin/remote-config-gen
 ```
 
 Or run it directly from a checkout without installing:
 
 ```sh
-swift run RemoteConfigGen generate
+swift run remote-config-gen generate
 ```
 
 ## Quick Start
@@ -76,7 +107,7 @@ swift run RemoteConfigGen generate
 3. Generate:
 
    ```sh
-   RemoteConfigGen generate
+   remote-config-gen generate
    ```
 
    This reads `config.yml` from the current directory (or pass
@@ -146,7 +177,7 @@ parameters:
 }
 ```
 
-`RemoteConfigGen generate` writes:
+`remote-config-gen generate` writes:
 
 ```swift
 // FeatureFlag.swift
@@ -173,11 +204,11 @@ implementation.
 ## Commands
 
 ```sh
-RemoteConfigGen generate [--config-directory <path>]
+remote-config-gen generate [--config-directory <path>]
 ```
 
-`generate` is also the default subcommand, so `RemoteConfigGen` with no
-arguments does the same thing as `RemoteConfigGen generate`.
+`generate` is also the default subcommand, so `remote-config-gen` with no
+arguments does the same thing as `remote-config-gen generate`.
 
 ## Development
 

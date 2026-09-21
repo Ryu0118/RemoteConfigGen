@@ -3,12 +3,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "RemoteConfigGen",
+    name: "remote-config-gen",
     platforms: [
         .macOS(.v26),
     ],
     products: [
-        .executable(name: "RemoteConfigGen", targets: ["RemoteConfigGen"]),
+        .executable(name: "remote-config-gen", targets: ["remote-config-gen"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.5.0"),
@@ -18,7 +18,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "RemoteConfigGen",
+            name: "remote-config-gen",
             dependencies: [
                 "RemoteConfigGenCLI",
                 .product(name: "Logging", package: "swift-log"),

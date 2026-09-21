@@ -14,7 +14,7 @@ output shapes (not hardcoded). See README for design rationale and output format
 
 ## Code standards
 
-- Three-target layout: `RemoteConfigGen` (executable, entry point only) → `RemoteConfigGenCLI`
+- Three-target layout: `remote-config-gen` (executable, entry point only) → `RemoteConfigGenCLI`
   (ArgumentParser command definitions) → `RemoteConfigGenKit` (all business logic, testable)
 - Command/Runner split: a `Command.run()` in CLI validates arguments and delegates to a
   `*Runner` in Kit; it holds no logic of its own
@@ -22,7 +22,7 @@ output shapes (not hardcoded). See README for design rationale and output format
   (remoteconfig.json parsing), `TypeMapping/` (valueType → Swift type), `CodeGeneration/`
   (enum/static-let source generation, sharing `EnumSourceBuilder` for the common
   header/declaration/doc-comment scaffolding)
-- CLI logs through `swift-log` (`Logging` product); `RemoteConfigGen` (the executable target)
+- CLI logs through `swift-log` (`Logging` product); `remote-config-gen` (the executable target)
   bootstraps `StreamLogHandler.standardOutput` once at startup — without that bootstrap call,
   `Logger` calls are silently dropped
 - File I/O goes through `Ryu0118/FileManagerProtocol`, not `FileManager.default` directly: types
