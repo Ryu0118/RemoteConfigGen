@@ -1,6 +1,17 @@
 # RemoteConfigGen
 
-Swift executable package with a small Kit target and Swift Testing.
+Codegen CLI: Firebase Remote Config template JSON (`parameters`/`conditions`) → type-safe Swift.
+Boolean parameters generate an enum (default name `FeatureFlag`); every other value type
+(String/Double/JSON) generates a typed, namespaced key (default namespace `RemoteConfigKeys`,
+default wrapper type `RemoteConfigKey<T>`) as `static let` — a single enum cannot hold cases of
+different associated-value types, so non-Bool parameters can't join the Bool enum. Condition
+info (percent rollouts, etc.) is surfaced only as a doc comment on the generated symbol; actual
+condition evaluation stays the Firebase SDK's job at runtime. All naming/shape choices are
+config-driven (see `config.yml` schema once implemented), not hardcoded, since this is meant to
+be a general-purpose tool like Egg or xcs, not project-specific.
+
+Not yet implemented: template parsing, type mapping, and code generation themselves — this
+scaffold is the harness only.
 
 ## Commands
 
