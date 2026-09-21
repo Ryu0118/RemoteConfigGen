@@ -13,12 +13,12 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "RemoteConfigGen",
-            dependencies: ["RemoteConfigGenKit"]
+            dependencies: ["RemoteConfigGenKit"],
         ),
         .target(name: "RemoteConfigGenKit"),
         .testTarget(
             name: "RemoteConfigGenKitTests",
-            dependencies: ["RemoteConfigGenKit"]
+            dependencies: ["RemoteConfigGenKit"],
         ),
-    ]
+    ],
 )

@@ -4,7 +4,7 @@ Swift executable package with a small Kit target and Swift Testing.
 
 ## Commands
 
-- `mise run setup` — install the pinned SwiftFormat, SwiftLint, my-swift-linter, docsync, and gitnagg tools, initialize docsync, and configure Git hooks.
+- `mise run setup` — install SwiftFormat, SwiftLint, my-swift-linter, docsync, and gitnagg, bump this project's tools to their latest version (`mise upgrade --local --bump`, scoped to this project's `.mise.toml` only), initialize docsync, and configure Git hooks.
 - `mise run format` — format Swift sources.
 - `mise run lint` — run strict SwiftLint.
 - `mise run ast-lint` — run my-swift-linter.

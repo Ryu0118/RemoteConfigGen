@@ -3,6 +3,7 @@
 --indent 4
 --indentcase false
 --stripunusedargs closure-only
+--test-case-name-format preserve
 
 --disable redundantSwiftTestingSuite
 

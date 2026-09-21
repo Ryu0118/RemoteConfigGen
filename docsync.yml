@@ -1,22 +1,19 @@
-# Keep the public README and project instructions aligned with the package/tooling definition.
 rules:
-  - name: readme-package
-    sources:
-      - Package.swift
-    doc: README.md
-    message: Package.swift changed; review the user-facing package commands in README.md.
-    checksum: ""
-
-  - name: claude-package
-    sources:
-      - Package.swift
-    doc: CLAUDE.md
-    message: Package.swift changed; review the package architecture in CLAUDE.md.
-    checksum: ""
-
-  - name: claude-mise-tasks
-    sources:
-      - .mise.toml
-    doc: CLAUDE.md
-    message: .mise.toml changed; review the command list in CLAUDE.md.
-    checksum: ""
+- name: readme-package
+  sources:
+  - Package.swift
+  doc: README.md
+  message: Package.swift changed; review the user-facing package commands in README.md.
+  checksum: da6ac36f53047071a29591e7eb2ced0899747225abbf51e61c633f20792ac262
+- name: claude-package
+  sources:
+  - Package.swift
+  doc: CLAUDE.md
+  message: Package.swift changed; review the package architecture in CLAUDE.md.
+  checksum: da6ac36f53047071a29591e7eb2ced0899747225abbf51e61c633f20792ac262
+- name: claude-mise-tasks
+  sources:
+  - .mise.toml
+  doc: CLAUDE.md
+  message: .mise.toml changed; review the command list in CLAUDE.md.
+  checksum: 931647468362f3499609a6caef295720ab96b2d0c43062ff3ad230da849444b9

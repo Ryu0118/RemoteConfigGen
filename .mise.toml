@@ -3,15 +3,17 @@
 min_version = "2026.7.5"
 
 [tools]
-"spm:nicklockwood/SwiftFormat" = { version = "0.62.1", artifactbundle = true }
-"spm:realm/SwiftLint" = { version = "0.65.0", artifactbundle = true }
+"spm:nicklockwood/SwiftFormat" = { version = "0.63.0", artifactbundle = "true" }
+"spm:realm/SwiftLint" = { version = "0.65.1", artifactbundle = "true" }
 "spm:Ryu0118/gitnagg" = { version = "0.3.0", artifactbundle = true }
-"spm:Ryu0118/my-swift-linter" = { version = "0.12.3", artifactbundle = true }
+"spm:Ryu0118/my-swift-linter" = { version = "0.14.0", artifactbundle = "true" }
 "spm:Ryu0118/docsync" = { version = "0.3.1", artifactbundle = true }
 
 [tasks.setup]
-description = "Install tools, initialize docsync, and configure Git hooks"
+description = "Install tools, bump this project's tools to their latest version, initialize docsync, and configure Git hooks"
 run = [
+    "./scripts/mise.sh install",
+    "./scripts/mise.sh upgrade --local --bump",
     "./scripts/mise.sh install",
     "./scripts/setup-hooks.sh",
     "./scripts/mise.sh exec -- docsync update-checksum --config docsync.yml",
