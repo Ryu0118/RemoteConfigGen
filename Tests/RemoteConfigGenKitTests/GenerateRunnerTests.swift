@@ -66,6 +66,40 @@ struct GenerateRunnerTests {
         #expect(keysSource.contains("static let maxUploadSizeMb = RemoteConfigKey<Double>(\"max_upload_size_mb\")"))
     }
 
+    @Test("strip_key_prefix removes the prefix from case names but keeps it in the raw value")
+    func stripKeyPrefixAffectsOnlyCaseNames() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input:
+          remote_config_json: "remoteconfig.json"
+        output:
+          directory: "Generated"
+        bool_output:
+          strip_key_prefix: "feature_flag_"
+        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {
+            "feature_flag_goalsApiWrite": {
+              "defaultValue": {"value": "true"},
+              "valueType": "BOOLEAN"
+            }
+          },
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        try await GenerateRunner(workingDirectory: workingDirectory).run()
+
+        let generatedDirectory = workingDirectory.appending(path: "Generated")
+        let flagSourceURL = generatedDirectory.appending(path: "FeatureFlag.swift")
+        let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
+        #expect(flagSource.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
+    }
+
     @Test("omits the bool file entirely when the template has no boolean parameters")
     func omitsBoolFileWhenNoBooleanParameters() async throws {
         let workingDirectory = makeTemporaryDirectory()

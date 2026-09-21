@@ -99,17 +99,23 @@ public extension GeneratorConfig {
         public var rawValue: Bool
         /// enumへ付与するprotocol conformance一覧。
         public var conformances: [String]
+        /// case名生成時にkeyから取り除く接頭辞。raw value（元のkey文字列）には影響しない。
+        /// 例: `"feature_flag_"`を指定すると、key `feature_flag_goalsApiWrite` の
+        /// case名は`goalsApiWrite`になる（raw valueは元のkeyのまま）。
+        public var stripKeyPrefix: String?
 
         public init(
             fileName: String? = nil,
             enumName: String = "FeatureFlag",
             rawValue: Bool = true,
             conformances: [String] = ["CaseIterable", "Sendable"],
+            stripKeyPrefix: String? = nil,
         ) {
             self.fileName = fileName
             self.enumName = enumName
             self.rawValue = rawValue
             self.conformances = conformances
+            self.stripKeyPrefix = stripKeyPrefix
         }
 
         /// 実際に使う出力ファイル名。`fileName`が未指定なら`enumName`から導出する。

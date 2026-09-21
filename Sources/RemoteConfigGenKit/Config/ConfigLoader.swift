@@ -92,6 +92,9 @@ public struct ConfigLoader: Sendable {
         if let conformances = raw?.conformances {
             config.boolOutput.conformances = conformances
         }
+        if let stripKeyPrefix = raw?.stripKeyPrefix {
+            config.boolOutput.stripKeyPrefix = stripKeyPrefix
+        }
     }
 
     private func apply(_ raw: RawNonBoolOutput?, to config: inout GeneratorConfig) {
