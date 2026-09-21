@@ -4,19 +4,7 @@ Swift executable package with a small Kit target and Swift Testing.
 
 ## Commands
 
-- `mise run setup` — install SwiftFormat, SwiftLint, my-swift-linter, docsync, and gitnagg, bump this project's tools to their latest version (`mise upgrade --local --bump`, scoped to this project's `.mise.toml` only), initialize docsync, and configure Git hooks.
-- `mise run format` — format Swift sources.
-- `mise run lint` — run strict SwiftLint.
-- `mise run ast-lint` — run my-swift-linter.
-- `mise run ast-fix` — run my-swift-linter autofix.
-- `mise run build` — build the executable package.
-- `mise run test` — run the test suite.
-- `mise run check` — format, lint, AST lint, build, test, and docsync.
-- `mise run docsync-check` — verify source and documentation checksums.
-- `mise run update-docsync-checksum` — update source and documentation checksums.
-- `mise run run` — run `RemoteConfigGen`.
-
-The project uses `.mise.toml` as the single source of truth for development commands. Keep task commands there rather than adding another task runner.
+`.mise.toml` is the single source of truth for development commands. Run `mise tasks` for the list, or `mise run setup` to get started. Keep task commands there rather than adding another task runner or duplicating descriptions elsewhere.
 
 ## Architecture
 
