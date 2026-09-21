@@ -30,13 +30,15 @@ public struct RemoteConfigParameter: Decodable, Equatable, Sendable {
     public var defaultValue: RemoteConfigDefaultValue?
     /// Firebase Consoleで設定された値の型。未指定の場合は`nil`。
     public var valueType: RemoteConfigValueType?
-    /// condition名をキーとするconditional value（段階ロールアウト等）の辞書。
-    public var conditionalValues: [String: RemoteConfigConditionalValue]
+    /// condition名をキーとするconditional value（段階ロールアウト等）の辞書。`defaultValue`と同じ
+    /// `{"value": "..."}` / `{"useInAppDefault": true}`形式（Firebase Remote Config REST APIの
+    /// `RemoteConfigParameterValue`と同型）。
+    public var conditionalValues: [String: RemoteConfigDefaultValue]
 
     public init(
         defaultValue: RemoteConfigDefaultValue?,
         valueType: RemoteConfigValueType?,
-        conditionalValues: [String: RemoteConfigConditionalValue] = [:],
+        conditionalValues: [String: RemoteConfigDefaultValue] = [:],
     ) {
         self.defaultValue = defaultValue
         self.valueType = valueType
@@ -54,7 +56,7 @@ public struct RemoteConfigParameter: Decodable, Equatable, Sendable {
         defaultValue = try container.decodeIfPresent(RemoteConfigDefaultValue.self, forKey: .defaultValue)
         valueType = try container.decodeIfPresent(RemoteConfigValueType.self, forKey: .valueType)
         let decoded = try container.decodeIfPresent(
-            [String: RemoteConfigConditionalValue].self,
+            [String: RemoteConfigDefaultValue].self,
             forKey: .conditionalValues,
         )
         conditionalValues = decoded ?? [:]
@@ -88,23 +90,6 @@ public enum RemoteConfigValueType: String, Decodable, Equatable, Sendable {
     case number = "NUMBER"
     case json = "JSON"
     case unspecified = "PARAMETER_VALUE_TYPE_UNSPECIFIED"
-}
-
-/// conditionによって切り替わる値。
-public struct RemoteConfigConditionalValue: Decodable, Equatable, Sendable {
-    /// そのconditionが真の場合に使われる値。
-    public var value: RemoteConfigDefaultValue?
-
-    public init(value: RemoteConfigDefaultValue?) {
-        self.value = value
-    }
-
-    enum CodingKeys: String, CodingKey { case value }
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        value = try container.decodeIfPresent(RemoteConfigDefaultValue.self, forKey: .value)
-    }
 }
 
 /// Remote Configのcondition定義（percent rollout等）。
