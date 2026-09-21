@@ -80,6 +80,9 @@ public struct ConfigLoader: Sendable {
     }
 
     private func apply(_ raw: RawBoolOutput?, to config: inout GeneratorConfig) {
+        if let enabled = raw?.enabled {
+            config.boolOutput.enabled = enabled
+        }
         if let enumName = raw?.enumName {
             config.boolOutput.enumName = enumName
         }
@@ -104,6 +107,9 @@ public struct ConfigLoader: Sendable {
     }
 
     private func apply(_ raw: RawNonBoolOutput?, to config: inout GeneratorConfig) {
+        if let enabled = raw?.enabled {
+            config.nonBoolOutput.enabled = enabled
+        }
         if let namespace = raw?.namespace {
             config.nonBoolOutput.namespace = namespace
         }

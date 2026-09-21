@@ -55,8 +55,10 @@ public struct GenerateRunner: Sendable {
         var nonBoolParameters: [NamedParameter] = []
         for (key, parameter) in template.parameters.sorted(by: { $0.key < $1.key }) {
             let swiftType = typeMapper.swiftType(for: parameter.valueType)
-            if swiftType == .bool, !matchesIncludeKeyPrefix(key, config: config) {
-                continue
+            if swiftType == .bool {
+                guard config.boolOutput.enabled, matchesIncludeKeyPrefix(key, config: config) else { continue }
+            } else {
+                guard config.nonBoolOutput.enabled else { continue }
             }
             let named = NamedParameter(
                 key: key,
@@ -70,13 +72,15 @@ public struct GenerateRunner: Sendable {
             }
         }
 
-        for key in config.boolOutput.additionalKeys.sorted() {
-            guard template.parameters[key] == nil else {
-                throw RemoteConfigGenError.duplicateAdditionalKey(key: key)
+        if config.boolOutput.enabled {
+            for key in config.boolOutput.additionalKeys.sorted() {
+                guard template.parameters[key] == nil else {
+                    throw RemoteConfigGenError.duplicateAdditionalKey(key: key)
+                }
+                boolParameters.append(NamedParameter(key: key, swiftType: .bool))
             }
-            boolParameters.append(NamedParameter(key: key, swiftType: .bool))
+            boolParameters.sort { $0.key < $1.key }
         }
-        boolParameters.sort { $0.key < $1.key }
 
         var result: [(fileName: String, source: String)] = []
 

@@ -124,6 +124,87 @@ struct GenerateRunnerKeyFilteringTests {
         #expect(flagSource.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
     }
 
+    @Test("non_bool_output.enabled = false skips generating the non-bool namespace entirely")
+    func nonBoolOutputDisabledSkipsGeneration() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input:
+          remote_config_json: "remoteconfig.json"
+        output:
+          directory: "Generated"
+        non_bool_output:
+          enabled: false
+        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {
+            "new_checkout_flow_enabled": {
+              "defaultValue": {"value": "true"},
+              "valueType": "BOOLEAN"
+            },
+            "welcome_message_variant": {
+              "defaultValue": {"value": "control"},
+              "valueType": "STRING"
+            }
+          },
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+        #expect(result.writtenFiles.count == 1)
+
+        let generatedDirectory = workingDirectory.appending(path: "Generated")
+        let flagPath = generatedDirectory.appending(path: "FeatureFlag.swift").path()
+        let keysPath = generatedDirectory.appending(path: "RemoteConfigKeys.swift").path()
+        #expect(FileManager.default.fileExists(atPath: flagPath))
+        #expect(!FileManager.default.fileExists(atPath: keysPath))
+    }
+
+    @Test("bool_output.enabled = false skips generating the bool enum entirely, including additional_keys")
+    func boolOutputDisabledSkipsGeneration() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input:
+          remote_config_json: "remoteconfig.json"
+        output:
+          directory: "Generated"
+        bool_output:
+          enabled: false
+          additional_keys: ["feature_flag_mentorInvitation"]
+        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {
+            "new_checkout_flow_enabled": {
+              "defaultValue": {"value": "true"},
+              "valueType": "BOOLEAN"
+            },
+            "welcome_message_variant": {
+              "defaultValue": {"value": "control"},
+              "valueType": "STRING"
+            }
+          },
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+        #expect(result.writtenFiles.count == 1)
+
+        let generatedDirectory = workingDirectory.appending(path: "Generated")
+        let flagPath = generatedDirectory.appending(path: "FeatureFlag.swift").path()
+        let keysPath = generatedDirectory.appending(path: "RemoteConfigKeys.swift").path()
+        #expect(!FileManager.default.fileExists(atPath: flagPath))
+        #expect(FileManager.default.fileExists(atPath: keysPath))
+    }
+
     @Test("an additional_keys entry that already exists in the template throws duplicateAdditionalKey")
     func additionalKeyDuplicatedInTemplateThrows() async throws {
         let workingDirectory = makeTemporaryDirectory()

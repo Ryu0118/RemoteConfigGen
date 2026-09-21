@@ -25,9 +25,11 @@ struct ConfigLoaderTests {
         #expect(config.boolOutput.resolvedFileName == "FeatureFlag.swift")
         #expect(config.boolOutput.rawValue == true)
         #expect(config.boolOutput.conformances == ["CaseIterable", "Sendable"])
+        #expect(config.boolOutput.enabled == true)
         #expect(config.boolOutput.stripKeyPrefix == nil)
         #expect(config.boolOutput.includeKeyPrefix == nil)
         #expect(config.boolOutput.additionalKeys == [])
+        #expect(config.nonBoolOutput.enabled == true)
         #expect(config.nonBoolOutput.namespace == "RemoteConfigKeys")
         #expect(config.nonBoolOutput.fileName == nil)
         #expect(config.nonBoolOutput.resolvedFileName == "RemoteConfigKeys.swift")
@@ -127,6 +129,23 @@ struct ConfigLoaderTests {
 
         #expect(config.boolOutput.includeKeyPrefix == "feature_flag_")
         #expect(config.boolOutput.additionalKeys == ["feature_flag_mentorInvitation"])
+    }
+
+    @Test("bool_output.enabled and non_bool_output.enabled are parsed")
+    func parsesEnabledFlags() throws {
+        let config = try loader.parse(
+            """
+            input:
+              remote_config_json: "a.json"
+            output:
+              directory: "Generated"
+            non_bool_output:
+              enabled: false
+            """,
+        )
+
+        #expect(config.boolOutput.enabled == true)
+        #expect(config.nonBoolOutput.enabled == false)
     }
 
     @Test("invalid access_level is an error")
