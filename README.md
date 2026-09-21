@@ -180,7 +180,7 @@ parameters:
     "new_checkout_flow_enabled": {
       "defaultValue": { "value": "true" },
       "valueType": "BOOLEAN",
-      "conditionalValues": { "fifty_percent_rollout": { "value": { "value": "false" } } }
+      "conditionalValues": { "fifty_percent_rollout": { "value": "false" } }
     },
     "welcome_message_variant": { "defaultValue": { "value": "control" }, "valueType": "STRING" },
     "max_upload_size_mb": { "defaultValue": { "value": "50" }, "valueType": "NUMBER" }
