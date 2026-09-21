@@ -132,12 +132,12 @@ parameters:
 ```json
 {
   "parameters": {
-    "study_streak_banner_enabled": {
+    "new_checkout_flow_enabled": {
       "defaultValue": { "value": "true" },
       "valueType": "BOOLEAN",
       "conditionalValues": { "fifty_percent_rollout": { "value": { "value": "false" } } }
     },
-    "onboarding_variant": { "defaultValue": { "value": "control" }, "valueType": "STRING" },
+    "welcome_message_variant": { "defaultValue": { "value": "control" }, "valueType": "STRING" },
     "max_upload_size_mb": { "defaultValue": { "value": "50" }, "valueType": "NUMBER" }
   },
   "conditions": [
@@ -152,14 +152,14 @@ parameters:
 // FeatureFlag.swift
 public enum FeatureFlag: String, CaseIterable, Sendable {
     /// Rollout: `percent('seed') <= 50` (condition: "fifty_percent_rollout")
-    case studyStreakBannerEnabled = "study_streak_banner_enabled"
+    case newCheckoutFlowEnabled = "new_checkout_flow_enabled"
 }
 ```
 
 ```swift
 // RemoteConfigKeys.swift
 public enum RemoteConfigKeys {
-    public static let onboardingVariant = RemoteConfigKey<String>("onboarding_variant")
+    public static let welcomeMessageVariant = RemoteConfigKey<String>("welcome_message_variant")
     public static let maxUploadSizeMb = RemoteConfigKey<Double>("max_upload_size_mb")
 }
 ```

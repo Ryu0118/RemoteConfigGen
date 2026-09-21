@@ -3,9 +3,9 @@ import Testing
 
 struct IdentifierNamingTests {
     @Test("snake_case converts to camelCase", arguments: [
-        ("study_streak_banner_enabled", "studyStreakBannerEnabled"),
+        ("new_checkout_flow_enabled", "newCheckoutFlowEnabled"),
         ("max_upload_size_mb", "maxUploadSizeMb"),
-        ("onboarding_variant", "onboardingVariant"),
+        ("welcome_message_variant", "welcomeMessageVariant"),
         ("already_camel", "alreadyCamel"),
         ("single", "single"),
     ])

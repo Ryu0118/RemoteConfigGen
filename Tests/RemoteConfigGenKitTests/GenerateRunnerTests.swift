@@ -24,14 +24,14 @@ struct GenerateRunnerTests {
         try """
         {
           "parameters": {
-            "study_streak_banner_enabled": {
+            "new_checkout_flow_enabled": {
               "defaultValue": {"value": "true"},
               "valueType": "BOOLEAN",
               "conditionalValues": {
                 "fifty_percent_rollout": {"value": {"value": "false"}}
               }
             },
-            "onboarding_variant": {
+            "welcome_message_variant": {
               "defaultValue": {"value": "control"},
               "valueType": "STRING"
             },
@@ -54,13 +54,15 @@ struct GenerateRunnerTests {
         let flagSourceURL = generatedDirectory.appending(path: "FeatureFlag.swift")
         let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
         #expect(flagSource.contains("enum FeatureFlag: String, CaseIterable, Sendable"))
-        #expect(flagSource.contains("case studyStreakBannerEnabled = \"study_streak_banner_enabled\""))
+        #expect(flagSource.contains("case newCheckoutFlowEnabled = \"new_checkout_flow_enabled\""))
         #expect(flagSource.contains("Rollout: `percent('seed') <= 50` (condition: \"fifty_percent_rollout\")"))
 
         let keysSourceURL = generatedDirectory.appending(path: "RemoteConfigKeys.swift")
         let keysSource = try String(contentsOf: keysSourceURL, encoding: .utf8)
         #expect(keysSource.contains("enum RemoteConfigKeys"))
-        #expect(keysSource.contains("static let onboardingVariant = RemoteConfigKey<String>(\"onboarding_variant\")"))
+        let welcomeVariantDeclaration = "static let welcomeMessageVariant = "
+            + "RemoteConfigKey<String>(\"welcome_message_variant\")"
+        #expect(keysSource.contains(welcomeVariantDeclaration))
         #expect(keysSource.contains("static let maxUploadSizeMb = RemoteConfigKey<Double>(\"max_upload_size_mb\")"))
     }
 
@@ -79,7 +81,7 @@ struct GenerateRunnerTests {
         try """
         {
           "parameters": {
-            "onboarding_variant": {
+            "welcome_message_variant": {
               "defaultValue": {"value": "control"},
               "valueType": "STRING"
             }
