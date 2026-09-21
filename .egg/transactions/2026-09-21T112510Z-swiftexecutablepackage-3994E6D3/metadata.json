@@ -1,0 +1,186 @@
+{
+  "applyToken" : "2026-09-21T112510Z-swiftexecutablepackage-3994E6D3",
+  "changes" : [
+    {
+      "kind" : "add",
+      "path" : ".claude\/hooks\/format.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".claude\/hooks\/gitnagg-check.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".claude\/hooks\/post-edit-ast-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".claude\/hooks\/post-edit-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".claude\/hooks\/pre-commit-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".claude\/settings.json"
+    },
+    {
+      "kind" : "add",
+      "path" : ".codex\/config.toml"
+    },
+    {
+      "kind" : "add",
+      "path" : ".codex\/hooks.json"
+    },
+    {
+      "kind" : "add",
+      "path" : ".codex\/hooks\/format.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".codex\/hooks\/gitnagg-check.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".codex\/hooks\/post-edit-ast-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".codex\/hooks\/post-edit-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".codex\/hooks\/pre-commit-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : ".githooks\/pre-commit"
+    },
+    {
+      "kind" : "add",
+      "path" : ".github\/workflows\/gitleaks.yml"
+    },
+    {
+      "kind" : "add",
+      "path" : ".github\/workflows\/release.yml"
+    },
+    {
+      "kind" : "add",
+      "path" : ".github\/workflows\/test.yml"
+    },
+    {
+      "kind" : "add",
+      "path" : ".gitignore"
+    },
+    {
+      "kind" : "add",
+      "path" : ".gitnagg.yml"
+    },
+    {
+      "kind" : "add",
+      "path" : ".mise.toml"
+    },
+    {
+      "kind" : "add",
+      "path" : ".my-swift-linter.yml"
+    },
+    {
+      "kind" : "add",
+      "path" : ".swiftformat"
+    },
+    {
+      "kind" : "add",
+      "path" : ".swiftlint.yml"
+    },
+    {
+      "kind" : "add",
+      "path" : "AGENTS.md"
+    },
+    {
+      "kind" : "add",
+      "path" : "CLAUDE.md"
+    },
+    {
+      "kind" : "add",
+      "path" : "Package.swift"
+    },
+    {
+      "kind" : "add",
+      "path" : "README.md"
+    },
+    {
+      "kind" : "add",
+      "path" : "Sources\/RemoteConfigGen\/main.swift"
+    },
+    {
+      "kind" : "add",
+      "path" : "Sources\/RemoteConfigGenKit\/RemoteConfigGenKit.swift"
+    },
+    {
+      "kind" : "add",
+      "path" : "Sources\/RemoteConfigGenKit\/Version.swift"
+    },
+    {
+      "kind" : "add",
+      "path" : "Tests\/RemoteConfigGenKitTests\/RemoteConfigGenKitTests.swift"
+    },
+    {
+      "kind" : "add",
+      "path" : "docsync.yml"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/agent-format.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/agent-gitnagg-check.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/agent-post-edit-ast-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/agent-post-edit-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/agent-pre-commit-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/ast-lint.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/lint-staged.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/mise.sh"
+    },
+    {
+      "kind" : "add",
+      "path" : "scripts\/setup-hooks.sh"
+    }
+  ],
+  "outputDirectory" : "\/var\/folders\/yv\/p_dj7vzs6731fz_kf2sswrnw0000gn\/T\/egg-agent-2026-09-21T112510Z-swiftexecutablepackage-3994E6D3-88DFB350-B5E1-4C39-AB96-6619BD903543\/work",
+  "referenceDirectory" : "\/Users\/ryu\/Programing\/Swift\/MyLibrary\/RemoteConfigGen\/.egg\/transactions\/2026-09-21T112510Z-swiftexecutablepackage-3994E6D3\/reference",
+  "rollbackId" : "2026-09-21T112510Z-swiftexecutablepackage-3994E6D3",
+  "status" : "applied",
+  "templateName" : "SwiftExecutablePackage",
+  "warnings" : [
+    {
+      "code" : "rollback_scope",
+      "message" : "Rollback can restore files inside the managed workspace only. External writes and network side effects from lifecycle scripts are not reversible."
+    },
+    {
+      "code" : "gitignore_scoped",
+      "message" : "Change detection follows the project's own .gitignore. Files ignored by git (build caches, node_modules, etc.) are not tracked as changes. Add a path to --include to force it in."
+    }
+  ],
+  "workDirectory" : "\/Users\/ryu\/Programing\/Swift\/MyLibrary\/RemoteConfigGen\/.egg\/transactions\/2026-09-21T112510Z-swiftexecutablepackage-3994E6D3\/work",
+  "workingDirectory" : "\/Users\/ryu\/Programing\/Swift\/MyLibrary\/RemoteConfigGen"
+}

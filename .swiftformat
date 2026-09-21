@@ -1,0 +1,12 @@
+# SwiftFormat configuration for RemoteConfigGen.
+--swiftversion 6.4
+--indent 4
+--indentcase false
+--stripunusedargs closure-only
+
+--disable redundantSwiftTestingSuite
+
+--exclude .build
+--exclude .swiftpm
+--exclude "**/.build/**"
+--exclude "**/.swiftpm/**"
