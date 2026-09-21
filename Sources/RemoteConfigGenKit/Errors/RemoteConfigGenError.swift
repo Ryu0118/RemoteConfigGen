@@ -7,6 +7,7 @@ public enum RemoteConfigGenError: Error, LocalizedError, Sendable {
     case remoteConfigTemplateNotFound(path: URL)
     case invalidRemoteConfigTemplate(reason: String)
     case writeFailed(path: URL)
+    case duplicateAdditionalKey(key: String)
 
     /// 原因と対処法を1文で説明するメッセージ。
     public var errorDescription: String? {
@@ -23,6 +24,9 @@ public enum RemoteConfigGenError: Error, LocalizedError, Sendable {
             "Remote Config template is invalid: \(reason)"
         case let .writeFailed(path):
             "Failed to write generated code to \(path.path()). Check that the output directory is writable."
+        case let .duplicateAdditionalKey(key):
+            "`bool_output.additional_keys` contains \"\(key)\", but that key already exists in the Remote "
+                + "Config template. Remove it from `additional_keys` now that it's managed by Remote Config."
         }
     }
 }

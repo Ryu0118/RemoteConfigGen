@@ -26,6 +26,8 @@ struct ConfigLoaderTests {
         #expect(config.boolOutput.rawValue == true)
         #expect(config.boolOutput.conformances == ["CaseIterable", "Sendable"])
         #expect(config.boolOutput.stripKeyPrefix == nil)
+        #expect(config.boolOutput.includeKeyPrefix == nil)
+        #expect(config.boolOutput.additionalKeys == [])
         #expect(config.nonBoolOutput.namespace == "RemoteConfigKeys")
         #expect(config.nonBoolOutput.fileName == nil)
         #expect(config.nonBoolOutput.resolvedFileName == "RemoteConfigKeys.swift")
@@ -107,6 +109,24 @@ struct ConfigLoaderTests {
         )
 
         #expect(config.boolOutput.stripKeyPrefix == "feature_flag_")
+    }
+
+    @Test("bool_output.include_key_prefix and additional_keys are parsed")
+    func parsesIncludeKeyPrefixAndAdditionalKeys() throws {
+        let config = try loader.parse(
+            """
+            input:
+              remote_config_json: "a.json"
+            output:
+              directory: "Generated"
+            bool_output:
+              include_key_prefix: "feature_flag_"
+              additional_keys: ["feature_flag_mentorInvitation"]
+            """,
+        )
+
+        #expect(config.boolOutput.includeKeyPrefix == "feature_flag_")
+        #expect(config.boolOutput.additionalKeys == ["feature_flag_mentorInvitation"])
     }
 
     @Test("invalid access_level is an error")

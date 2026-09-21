@@ -100,6 +100,111 @@ struct GenerateRunnerTests {
         #expect(flagSource.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
     }
 
+    @Test("include_key_prefix excludes bool parameters that don't match the prefix")
+    func includeKeyPrefixFiltersNonMatchingBoolParameters() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input:
+          remote_config_json: "remoteconfig.json"
+        output:
+          directory: "Generated"
+        bool_output:
+          include_key_prefix: "feature_flag_"
+        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {
+            "feature_flag_goalsApiWrite": {
+              "defaultValue": {"value": "true"},
+              "valueType": "BOOLEAN"
+            },
+            "maintenanceModeStudyLegends": {
+              "defaultValue": {"value": "false"},
+              "valueType": "BOOLEAN"
+            }
+          },
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        try await GenerateRunner(workingDirectory: workingDirectory).run()
+
+        let flagSourceURL = workingDirectory.appending(path: "Generated").appending(path: "FeatureFlag.swift")
+        let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
+        #expect(flagSource.contains("case featureFlagGoalsApiWrite = \"feature_flag_goalsApiWrite\""))
+        #expect(!flagSource.contains("maintenanceModeStudyLegends"))
+    }
+
+    @Test("additional_keys are generated as if they were bool parameters in the template")
+    func additionalKeysAreGeneratedAsBoolParameters() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input:
+          remote_config_json: "remoteconfig.json"
+        output:
+          directory: "Generated"
+        bool_output:
+          strip_key_prefix: "feature_flag_"
+          additional_keys: ["feature_flag_mentorInvitation"]
+        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {
+            "feature_flag_goalsApiWrite": {
+              "defaultValue": {"value": "true"},
+              "valueType": "BOOLEAN"
+            }
+          },
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        try await GenerateRunner(workingDirectory: workingDirectory).run()
+
+        let flagSourceURL = workingDirectory.appending(path: "Generated").appending(path: "FeatureFlag.swift")
+        let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
+        #expect(flagSource.contains("case mentorInvitation = \"feature_flag_mentorInvitation\""))
+        #expect(flagSource.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
+    }
+
+    @Test("an additional_keys entry that already exists in the template throws duplicateAdditionalKey")
+    func additionalKeyDuplicatedInTemplateThrows() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input:
+          remote_config_json: "remoteconfig.json"
+        output:
+          directory: "Generated"
+        bool_output:
+          additional_keys: ["feature_flag_goalsApiWrite"]
+        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {
+            "feature_flag_goalsApiWrite": {
+              "defaultValue": {"value": "true"},
+              "valueType": "BOOLEAN"
+            }
+          },
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        let runner = GenerateRunner(workingDirectory: workingDirectory)
+        await #expect(throws: RemoteConfigGenError.self) {
+            try await runner.run()
+        }
+    }
+
     @Test("omits the bool file entirely when the template has no boolean parameters")
     func omitsBoolFileWhenNoBooleanParameters() async throws {
         let workingDirectory = makeTemporaryDirectory()

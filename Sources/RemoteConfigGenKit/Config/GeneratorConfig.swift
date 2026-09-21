@@ -103,6 +103,14 @@ public extension GeneratorConfig {
         /// 例: `"feature_flag_"`を指定すると、key `feature_flag_goalsApiWrite` の
         /// case名は`goalsApiWrite`になる（raw valueは元のkeyのまま）。
         public var stripKeyPrefix: String?
+        /// 指定された場合、この接頭辞を持つBool parameterのみを生成対象にする。
+        /// `nil`なら全Bool parameterが対象（従来通り）。`additionalKeys`はこのフィルタの影響を受けない。
+        public var includeKeyPrefix: String?
+        /// Remote Configテンプレートに存在しないが、生成対象に含めたいkeyの一覧（完全なkey文字列）。
+        /// `stripKeyPrefix`は適用されるが`includeKeyPrefix`によるフィルタは適用されない。
+        /// テンプレート側に同名keyが既に存在する場合はエラーになる（フラグがRemote Configへ
+        /// 移行済みなのにconfig.ymlが更新されていないサイン）。
+        public var additionalKeys: [String]
 
         public init(
             fileName: String? = nil,
@@ -110,12 +118,16 @@ public extension GeneratorConfig {
             rawValue: Bool = true,
             conformances: [String] = ["CaseIterable", "Sendable"],
             stripKeyPrefix: String? = nil,
+            includeKeyPrefix: String? = nil,
+            additionalKeys: [String] = [],
         ) {
             self.fileName = fileName
             self.enumName = enumName
             self.rawValue = rawValue
             self.conformances = conformances
             self.stripKeyPrefix = stripKeyPrefix
+            self.includeKeyPrefix = includeKeyPrefix
+            self.additionalKeys = additionalKeys
         }
 
         /// 実際に使う出力ファイル名。`fileName`が未指定なら`enumName`から導出する。
