@@ -14,7 +14,13 @@ output shapes (not hardcoded). See README for design rationale and output format
 
 ## Code standards
 
-- Keep business logic in `RemoteConfigGenKit` (testable); executable entry point stays thin
+- Three-target layout: `RemoteConfigGen` (executable, entry point only) → `RemoteConfigGenCLI`
+  (ArgumentParser command definitions) → `RemoteConfigGenKit` (all business logic, testable)
+- Command/Runner split: a `Command.run()` in CLI validates arguments and delegates to a
+  `*Runner` in Kit; it holds no logic of its own
+- Kit is organized by domain, not by layer: `Config/` (config.yml parsing), `TemplateParsing/`
+  (remoteconfig.json parsing), `TypeMapping/` (valueType → Swift type), `CodeGeneration/`
+  (enum/static-let source generation)
 - Swift 6 strict-concurrency compatible; default to package-internal access, `public` only when
   another module needs the symbol
-- Doc comments required for non-obvious public APIs and compatibility constraints
+- Doc comments required for public APIs (this project writes them in English, not Japanese)

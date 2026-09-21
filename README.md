@@ -8,19 +8,31 @@ output shape — none of it hardcoded).
 
 Intended to run the same way SwiftGen does: as a step in `mise run gen`, not interactively.
 
-## Commands
+## Usage
 
 ```sh
-# Install the development tools.
-mise run setup
+RemoteConfigGen generate --config-directory /path/to/project   # defaults to the current directory
+```
 
-# Build and test.
-mise run build
-mise run test
+`config.yml` (in the current directory, or `--config-directory`) needs at least:
 
-# Run all checks.
-mise run check
+```yaml
+input:
+  remote_config_json: "firebase/remoteconfig.production.json"
+output:
+  directory: "Sources/RemoteConfigKeys/Generated"
+```
 
-# Run the executable.
-mise run run
+Boolean parameters generate a `String`-raw-value enum (default: `FeatureFlag`); every other
+value type (String/Double/JSON) generates a typed, namespaced key (default namespace:
+`RemoteConfigKeys`, default wrapper type: `RemoteConfigKey<T>`) as `static let`. Every
+naming/shape choice is configurable — see `GeneratorConfig` in `RemoteConfigGenKit` for the
+full schema.
+
+## Development
+
+```sh
+mise run setup   # install tools, configure Git hooks
+mise run check   # format, lint, build, test, docsync
+mise run test    # run the test suite
 ```
