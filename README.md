@@ -2,7 +2,7 @@
 
 **Type-safe Swift bindings for Firebase Remote Config, generated from your template.**
 
-[![Swift](https://img.shields.io/badge/Swift-6.4-F05138?logo=swift&logoColor=white)](https://swift.org)
+[![Swift](https://img.shields.io/badge/Swift-6.2-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-lightgrey)](https://developer.apple.com/macos/)
 
 Firebase Remote Config keys are strings. Every app that reads them ends up
@@ -71,7 +71,7 @@ mise use -g github:Ryu0118/RemoteConfigGen
 
 #### Build from source
 
-Requires **macOS 26+** and **Swift 6.4**.
+Requires **macOS 26+** and **Swift 6.2**.
 
 ```sh
 git clone https://github.com/Ryu0118/RemoteConfigGen.git
