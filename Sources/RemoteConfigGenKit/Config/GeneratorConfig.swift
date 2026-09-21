@@ -91,8 +91,8 @@ public extension GeneratorConfig {
 
     /// Bool parameterをenumとして出力する際の設定。
     struct BoolOutput: Equatable, Sendable {
-        /// 出力ファイル名。省略時は `<enumName>.swift`。
-        public var fileName: String
+        /// 出力ファイル名。`nil`なら `<enumName>.swift` を使う（`resolvedFileName`参照）。
+        public var fileName: String?
         /// 生成するenum名。
         public var enumName: String
         /// `true`ならString raw valueでparameter key名を保持する。
@@ -106,17 +106,22 @@ public extension GeneratorConfig {
             rawValue: Bool = true,
             conformances: [String] = ["CaseIterable", "Sendable"],
         ) {
+            self.fileName = fileName
             self.enumName = enumName
-            self.fileName = fileName ?? "\(enumName).swift"
             self.rawValue = rawValue
             self.conformances = conformances
+        }
+
+        /// 実際に使う出力ファイル名。`fileName`が未指定なら`enumName`から導出する。
+        public var resolvedFileName: String {
+            fileName ?? "\(enumName).swift"
         }
     }
 
     /// Bool以外のparameterをstatic letとして出力する際の設定。
     struct NonBoolOutput: Equatable, Sendable {
-        /// 出力ファイル名。省略時は `<namespace>.swift`。
-        public var fileName: String
+        /// 出力ファイル名。`nil`なら `<namespace>.swift` を使う（`resolvedFileName`参照）。
+        public var fileName: String?
         /// 生成するnamespace（enum）名。
         public var namespace: String
         /// 各keyをラップする型の名前（例: `RemoteConfigKey`）。
@@ -127,9 +132,14 @@ public extension GeneratorConfig {
             namespace: String = "RemoteConfigKeys",
             keyType: String = "RemoteConfigKey",
         ) {
+            self.fileName = fileName
             self.namespace = namespace
-            self.fileName = fileName ?? "\(namespace).swift"
             self.keyType = keyType
+        }
+
+        /// 実際に使う出力ファイル名。`fileName`が未指定なら`namespace`から導出する。
+        public var resolvedFileName: String {
+            fileName ?? "\(namespace).swift"
         }
     }
 

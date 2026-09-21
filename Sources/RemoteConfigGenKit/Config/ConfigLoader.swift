@@ -77,7 +77,6 @@ public struct ConfigLoader: Sendable {
     private func apply(_ raw: RawBoolOutput?, to config: inout GeneratorConfig) {
         if let enumName = raw?.enumName {
             config.boolOutput.enumName = enumName
-            config.boolOutput.fileName = raw?.fileName ?? "\(enumName).swift"
         }
         if let fileName = raw?.fileName {
             config.boolOutput.fileName = fileName
@@ -93,7 +92,6 @@ public struct ConfigLoader: Sendable {
     private func apply(_ raw: RawNonBoolOutput?, to config: inout GeneratorConfig) {
         if let namespace = raw?.namespace {
             config.nonBoolOutput.namespace = namespace
-            config.nonBoolOutput.fileName = raw?.fileName ?? "\(namespace).swift"
         }
         if let fileName = raw?.fileName {
             config.nonBoolOutput.fileName = fileName

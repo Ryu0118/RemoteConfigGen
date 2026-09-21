@@ -4,43 +4,40 @@ import Foundation
 /// ファイル書き出し、という直列ステップを順に呼ぶオーケストレーター。
 public struct GenerateRunner: Sendable {
     private let workingDirectory: URL
-    private let configLoader: ConfigLoader
-    private let templateLoader: RemoteConfigTemplateLoader
-    private let fileWriter: @Sendable (String, URL) throws -> Void
+    private let configLoader = ConfigLoader()
+    private let templateLoader = RemoteConfigTemplateLoader()
 
     public init(workingDirectory: URL) {
-        self.init(
-            workingDirectory: workingDirectory,
-            configLoader: ConfigLoader(),
-            templateLoader: RemoteConfigTemplateLoader(),
-            fileWriter: { content, url in
-                try FileManager.default.createDirectory(
-                    at: url.deletingLastPathComponent(),
-                    withIntermediateDirectories: true,
-                )
-                try content.write(to: url, atomically: true, encoding: .utf8)
-            },
-        )
-    }
-
-    init(
-        workingDirectory: URL,
-        configLoader: ConfigLoader,
-        templateLoader: RemoteConfigTemplateLoader,
-        fileWriter: @escaping @Sendable (String, URL) throws -> Void,
-    ) {
         self.workingDirectory = workingDirectory
-        self.configLoader = configLoader
-        self.templateLoader = templateLoader
-        self.fileWriter = fileWriter
     }
 
-    /// config.yml読込からファイル書き出しまでを一通り実行する。
-    public func run() async throws {
+    /// config.yml読込からファイル書き出しまでを一通り実行し、書き出したファイルのURLを返す。
+    @discardableResult
+    public func run() async throws -> [URL] {
         let config = try configLoader.load(from: workingDirectory)
         let templatePath = workingDirectory.appending(path: config.input.remoteConfigJSON)
         let template = try templateLoader.load(from: templatePath)
 
+        let generatedFiles = generatedFiles(from: template, config: config)
+
+        let outputDirectory = workingDirectory.appending(path: config.output.directory)
+        for file in generatedFiles {
+            let destination = outputDirectory.appending(path: file.fileName)
+            try FileManager.default.createDirectory(
+                at: destination.deletingLastPathComponent(),
+                withIntermediateDirectories: true,
+            )
+            try file.source.write(to: destination, atomically: true, encoding: .utf8)
+        }
+
+        return generatedFiles.map { outputDirectory.appending(path: $0.fileName) }
+    }
+
+    /// config.ymlとRemote Configテンプレートから、書き出すべき生成コードを計算する（ファイルI/Oは行わない）。
+    private func generatedFiles(
+        from template: RemoteConfigTemplate,
+        config: GeneratorConfig,
+    ) -> [(fileName: String, source: String)] {
         let typeMapper = TypeMapper(config: config)
         let conditionExpressions = Dictionary(
             uniqueKeysWithValues: template.conditions.map { ($0.name, $0.expression) },
@@ -62,14 +59,14 @@ public struct GenerateRunner: Sendable {
             }
         }
 
-        let outputDirectory = workingDirectory.appending(path: config.output.directory)
+        var result: [(fileName: String, source: String)] = []
 
         if !boolParameters.isEmpty {
             let source = BoolEnumGenerator(config: config).generate(
                 parameters: boolParameters,
                 conditionExpressions: conditionExpressions,
             )
-            try fileWriter(source, outputDirectory.appending(path: config.boolOutput.fileName))
+            result.append((config.boolOutput.resolvedFileName, source))
         }
 
         if !nonBoolParameters.isEmpty {
@@ -77,7 +74,9 @@ public struct GenerateRunner: Sendable {
                 parameters: nonBoolParameters,
                 conditionExpressions: conditionExpressions,
             )
-            try fileWriter(source, outputDirectory.appending(path: config.nonBoolOutput.fileName))
+            result.append((config.nonBoolOutput.resolvedFileName, source))
         }
+
+        return result
     }
 }
