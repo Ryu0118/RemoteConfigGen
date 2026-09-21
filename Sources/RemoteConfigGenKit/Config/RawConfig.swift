@@ -42,6 +42,7 @@ struct RawNaming: Decodable {
 }
 
 struct RawBoolOutput: Decodable {
+    let enabled: Bool?
     let fileName: String?
     let enumName: String?
     let rawValue: Bool?
@@ -50,6 +51,7 @@ struct RawBoolOutput: Decodable {
     let includeKeyPrefix: String?
     let additionalKeys: [String]?
     enum CodingKeys: String, CodingKey {
+        case enabled
         case fileName = "file_name"
         case enumName = "enum_name"
         case rawValue = "raw_value"
@@ -61,10 +63,12 @@ struct RawBoolOutput: Decodable {
 }
 
 struct RawNonBoolOutput: Decodable {
+    let enabled: Bool?
     let fileName: String?
     let namespace: String?
     let keyType: String?
     enum CodingKeys: String, CodingKey {
+        case enabled
         case fileName = "file_name"
         case namespace
         case keyType = "key_type"

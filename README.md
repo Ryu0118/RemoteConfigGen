@@ -138,6 +138,7 @@ naming:
   case_convention: "camelCase"                                        # snake_case key -> Swift identifier
 
 bool_output:
+  enabled: true                                                       # false skips generating the bool enum entirely
   enum_name: "FeatureFlag"
   file_name: "FeatureFlag.swift"                                      # defaults to "<enum_name>.swift"
   raw_value: true                                                     # keep the Remote Config key as a String raw value
@@ -147,6 +148,7 @@ bool_output:
   additional_keys: []                                                 # full key strings to include even if absent from the template
 
 non_bool_output:
+  enabled: true                                                       # false skips generating the non-bool namespace entirely
   namespace: "RemoteConfigKeys"
   file_name: "RemoteConfigKeys.swift"                                 # defaults to "<namespace>.swift"
   key_type: "RemoteConfigKey"                                         # wrapper type name, e.g. RemoteConfigKey<String>
@@ -157,6 +159,13 @@ type_fallback:
 documentation:
   include_condition_summary: true                                     # surface rollout conditions as doc comments
 ```
+
+`bool_output.enabled: false` / `non_bool_output.enabled: false` skip that
+half of generation entirely — useful when your template mixes flags with
+unrelated config (non-BOOLEAN parameters you don't want a generated
+namespace for, or a project where only the bool enum matters) and you'd
+otherwise have to gitignore or delete a file SwiftPM would still try to
+compile.
 
 `include_key_prefix` and `additional_keys` cover two situations
 `strip_key_prefix` alone doesn't: filtering out BOOLEAN parameters that
