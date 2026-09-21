@@ -142,6 +142,7 @@ bool_output:
   file_name: "FeatureFlag.swift"                                      # defaults to "<enum_name>.swift"
   raw_value: true                                                     # keep the Remote Config key as a String raw value
   conformances: ["CaseIterable", "Sendable"]
+  strip_key_prefix: null                                              # e.g. "feature_flag_" -> case name drops it, raw value keeps it
 
 non_bool_output:
   namespace: "RemoteConfigKeys"

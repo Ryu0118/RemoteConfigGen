@@ -11,7 +11,10 @@ struct BoolEnumGenerator {
             "\(config.output.accessLevel.declarationPrefix)enum \(config.boolOutput.enumName): \(conformances) {"
 
         let members = parameters.map { parameter in
-            let caseName = IdentifierNaming.camelCase(from: parameter.key)
+            let caseName = IdentifierNaming.camelCase(
+                from: parameter.key,
+                stripPrefix: config.boolOutput.stripKeyPrefix,
+            )
             let declaration = config.boolOutput.rawValue
                 ? "    case \(caseName) = \"\(parameter.key)\""
                 : "    case \(caseName)"
