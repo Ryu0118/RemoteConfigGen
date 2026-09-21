@@ -1,4 +1,5 @@
 import ArgumentParser
+import FileManagerProtocol
 import Foundation
 import Logging
 import RemoteConfigGenKit
@@ -15,8 +16,9 @@ extension RemoteConfigGenCommand {
 
         func run() async throws {
             let logger = Logger(label: "com.ryu0118.remoteconfiggen")
-            let workingDirectory = URL(filePath: configDirectory ?? FileManager.default.currentDirectoryPath)
-            let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+            let fileManager: any FileManagerProtocol = FileManager.default
+            let workingDirectory = URL(filePath: configDirectory ?? fileManager.currentDirectoryPath)
+            let result = try await GenerateRunner(workingDirectory: workingDirectory, fileManager: fileManager).run()
 
             if result.writtenFiles.isEmpty {
                 let message = "Read \(result.parameterCount) parameter(s) from the Remote Config template, "

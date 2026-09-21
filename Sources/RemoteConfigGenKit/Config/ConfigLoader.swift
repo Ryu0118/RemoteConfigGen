@@ -1,14 +1,19 @@
+import FileManagerProtocol
 import Foundation
 import Yams
 
 /// カレントディレクトリの `config.yml` を読み込み `GeneratorConfig` へ変換する。
 public struct ConfigLoader: Sendable {
-    public init() {}
+    private let fileManager: any FileManagerProtocol
+
+    public init(fileManager: some FileManagerProtocol = FileManager.default) {
+        self.fileManager = fileManager
+    }
 
     /// `directory/config.yml` を読み込む。見つからなければ `.configNotFound` を投げる。
     public func load(from directory: URL) throws -> GeneratorConfig {
         let configPath = directory.appending(path: "config.yml")
-        guard let data = FileManager.default.contents(atPath: configPath.path()) else {
+        guard let data = fileManager.contents(atPath: configPath.path()) else {
             throw RemoteConfigGenError.configNotFound(directory: directory)
         }
         guard let yamlString = String(data: data, encoding: .utf8) else {

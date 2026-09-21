@@ -6,6 +6,7 @@ public enum RemoteConfigGenError: Error, LocalizedError, Sendable {
     case invalidConfig(reason: String)
     case remoteConfigTemplateNotFound(path: URL)
     case invalidRemoteConfigTemplate(reason: String)
+    case writeFailed(path: URL)
 
     /// 原因と対処法を1文で説明するメッセージ。
     public var errorDescription: String? {
@@ -20,6 +21,8 @@ public enum RemoteConfigGenError: Error, LocalizedError, Sendable {
                 + "path, or run `firebase remoteconfig:get` to fetch a fresh template."
         case let .invalidRemoteConfigTemplate(reason):
             "Remote Config template is invalid: \(reason)"
+        case let .writeFailed(path):
+            "Failed to write generated code to \(path.path()). Check that the output directory is writable."
         }
     }
 }

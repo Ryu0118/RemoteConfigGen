@@ -1,14 +1,19 @@
+import FileManagerProtocol
 import Foundation
 
 /// `generate`コマンドの実処理。Config読込 → Template parse → Type mapping → Code生成 →
 /// ファイル書き出し、という直列ステップを順に呼ぶオーケストレーター。
 public struct GenerateRunner: Sendable {
     private let workingDirectory: URL
-    private let configLoader = ConfigLoader()
-    private let templateLoader = RemoteConfigTemplateLoader()
+    private let fileManager: any FileManagerProtocol
+    private let configLoader: ConfigLoader
+    private let templateLoader: RemoteConfigTemplateLoader
 
-    public init(workingDirectory: URL) {
+    public init(workingDirectory: URL, fileManager: some FileManagerProtocol = FileManager.default) {
         self.workingDirectory = workingDirectory
+        self.fileManager = fileManager
+        configLoader = ConfigLoader(fileManager: fileManager)
+        templateLoader = RemoteConfigTemplateLoader(fileManager: fileManager)
     }
 
     /// config.yml読込からファイル書き出しまでを一通り実行する。
@@ -23,11 +28,13 @@ public struct GenerateRunner: Sendable {
         var writtenFiles: [URL] = []
         for file in generatedFiles {
             let destination = outputDirectory.appending(path: file.fileName)
-            try FileManager.default.createDirectory(
+            try fileManager.createDirectory(
                 at: destination.deletingLastPathComponent(),
                 withIntermediateDirectories: true,
             )
-            try file.source.write(to: destination, atomically: true, encoding: .utf8)
+            guard fileManager.createFile(atPath: destination.path(), contents: Data(file.source.utf8)) else {
+                throw RemoteConfigGenError.writeFailed(path: destination)
+            }
             writtenFiles.append(destination)
         }
 

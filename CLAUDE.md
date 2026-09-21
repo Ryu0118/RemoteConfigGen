@@ -25,6 +25,9 @@ output shapes (not hardcoded). See README for design rationale and output format
 - CLI logs through `swift-log` (`Logging` product); `RemoteConfigGen` (the executable target)
   bootstraps `StreamLogHandler.standardOutput` once at startup — without that bootstrap call,
   `Logger` calls are silently dropped
+- File I/O goes through `Ryu0118/FileManagerProtocol`, not `FileManager.default` directly: types
+  that touch the filesystem take `fileManager: some FileManagerProtocol = FileManager.default` in
+  their initializer and store it as `any FileManagerProtocol`, matching the pattern in Egg/x8
 - Swift 6 strict-concurrency compatible; default to package-internal access, `public` only when
   another module needs the symbol
 - Doc comments required for public APIs (this project writes them in English, not Japanese)

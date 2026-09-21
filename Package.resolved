@@ -1,6 +1,15 @@
 {
-  "originHash" : "8ab4962615cde43b6cee1154b990951ddc6740a06ae0ae15328f2256efebad52",
+  "originHash" : "3e22c447524ee98be6f6965297156ca0a787c508ec81e5c8215856575d901c99",
   "pins" : [
+    {
+      "identity" : "filemanagerprotocol",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Ryu0118/FileManagerProtocol",
+      "state" : {
+        "revision" : "64a9b362f9dcd933f6dad82603c2ab0ff23863fc",
+        "version" : "0.1.0"
+      }
+    },
     {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
