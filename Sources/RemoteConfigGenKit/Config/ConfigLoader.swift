@@ -95,6 +95,12 @@ public struct ConfigLoader: Sendable {
         if let stripKeyPrefix = raw?.stripKeyPrefix {
             config.boolOutput.stripKeyPrefix = stripKeyPrefix
         }
+        if let includeKeyPrefix = raw?.includeKeyPrefix {
+            config.boolOutput.includeKeyPrefix = includeKeyPrefix
+        }
+        if let additionalKeys = raw?.additionalKeys {
+            config.boolOutput.additionalKeys = additionalKeys
+        }
     }
 
     private func apply(_ raw: RawNonBoolOutput?, to config: inout GeneratorConfig) {

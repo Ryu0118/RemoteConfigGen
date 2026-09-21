@@ -47,12 +47,16 @@ struct RawBoolOutput: Decodable {
     let rawValue: Bool?
     let conformances: [String]?
     let stripKeyPrefix: String?
+    let includeKeyPrefix: String?
+    let additionalKeys: [String]?
     enum CodingKeys: String, CodingKey {
         case fileName = "file_name"
         case enumName = "enum_name"
         case rawValue = "raw_value"
         case conformances
         case stripKeyPrefix = "strip_key_prefix"
+        case includeKeyPrefix = "include_key_prefix"
+        case additionalKeys = "additional_keys"
     }
 }
 

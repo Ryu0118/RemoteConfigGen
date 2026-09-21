@@ -143,6 +143,8 @@ bool_output:
   raw_value: true                                                     # keep the Remote Config key as a String raw value
   conformances: ["CaseIterable", "Sendable"]
   strip_key_prefix: null                                              # e.g. "feature_flag_" -> case name drops it, raw value keeps it
+  include_key_prefix: null                                            # only generate BOOLEAN parameters whose key has this prefix
+  additional_keys: []                                                 # full key strings to include even if absent from the template
 
 non_bool_output:
   namespace: "RemoteConfigKeys"
@@ -155,6 +157,17 @@ type_fallback:
 documentation:
   include_condition_summary: true                                     # surface rollout conditions as doc comments
 ```
+
+`include_key_prefix` and `additional_keys` cover two situations
+`strip_key_prefix` alone doesn't: filtering out BOOLEAN parameters that
+belong to something other than your flag namespace (e.g. an unrelated
+`maintenanceMode` toggle sitting next to your `feature_flag_*` keys), and
+listing flags that don't live in Remote Config at all — a flag gated purely
+by build environment, for instance — so it still gets a `case` in the
+generated enum instead of living in a hand-maintained extension. Entries in
+`additional_keys` still go through `strip_key_prefix`, and it's an error for
+one to also exist in the template — that means the flag has moved to Remote
+Config and the entry is now stale.
 
 ## What gets generated
 

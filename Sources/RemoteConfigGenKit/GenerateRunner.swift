@@ -22,7 +22,7 @@ public struct GenerateRunner: Sendable {
         let templatePath = workingDirectory.appending(path: config.input.remoteConfigJSON)
         let template = try templateLoader.load(from: templatePath)
 
-        let generatedFiles = generatedFiles(from: template, config: config)
+        let generatedFiles = try generatedFiles(from: template, config: config)
 
         let outputDirectory = workingDirectory.appending(path: config.output.directory)
         var writtenFiles: [URL] = []
@@ -45,7 +45,7 @@ public struct GenerateRunner: Sendable {
     private func generatedFiles(
         from template: RemoteConfigTemplate,
         config: GeneratorConfig,
-    ) -> [(fileName: String, source: String)] {
+    ) throws -> [(fileName: String, source: String)] {
         let typeMapper = TypeMapper(config: config)
         let conditionExpressions = Dictionary(
             uniqueKeysWithValues: template.conditions.map { ($0.name, $0.expression) },
@@ -55,6 +55,9 @@ public struct GenerateRunner: Sendable {
         var nonBoolParameters: [NamedParameter] = []
         for (key, parameter) in template.parameters.sorted(by: { $0.key < $1.key }) {
             let swiftType = typeMapper.swiftType(for: parameter.valueType)
+            if swiftType == .bool, !matchesIncludeKeyPrefix(key, config: config) {
+                continue
+            }
             let named = NamedParameter(
                 key: key,
                 swiftType: swiftType,
@@ -66,6 +69,14 @@ public struct GenerateRunner: Sendable {
                 nonBoolParameters.append(named)
             }
         }
+
+        for key in config.boolOutput.additionalKeys.sorted() {
+            guard template.parameters[key] == nil else {
+                throw RemoteConfigGenError.duplicateAdditionalKey(key: key)
+            }
+            boolParameters.append(NamedParameter(key: key, swiftType: .bool))
+        }
+        boolParameters.sort { $0.key < $1.key }
 
         var result: [(fileName: String, source: String)] = []
 
@@ -86,6 +97,12 @@ public struct GenerateRunner: Sendable {
         }
 
         return result
+    }
+
+    /// `includeKeyPrefix`が未指定なら常に対象。指定されていれば、keyがその接頭辞で始まる場合のみ対象。
+    private func matchesIncludeKeyPrefix(_ key: String, config: GeneratorConfig) -> Bool {
+        guard let includeKeyPrefix = config.boolOutput.includeKeyPrefix else { return true }
+        return key.hasPrefix(includeKeyPrefix)
     }
 }
 
