@@ -46,6 +46,8 @@ rules:
         - kinds: [init]
         - kinds: [enum]
           names: [CodingKeys]
+        - kinds: [var]
+          names: [description, errorDescription, failureReason, recoverySuggestion, helpAnchor]
     include:
       - "Sources/RemoteConfigGenKit/**"
     exclude:

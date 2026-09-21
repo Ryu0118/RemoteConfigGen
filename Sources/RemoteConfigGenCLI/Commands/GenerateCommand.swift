@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import Logging
 import RemoteConfigGenKit
 
 extension RemoteConfigGenCommand {
@@ -13,8 +14,12 @@ extension RemoteConfigGenCommand {
         var configDirectory: String?
 
         func run() async throws {
+            let logger = Logger(label: "com.ryu0118.remoteconfiggen")
             let workingDirectory = URL(filePath: configDirectory ?? FileManager.default.currentDirectoryPath)
-            try await GenerateRunner(workingDirectory: workingDirectory).run()
+            let writtenFiles = try await GenerateRunner(workingDirectory: workingDirectory).run()
+            for file in writtenFiles {
+                logger.info("Generated \(file.path())")
+            }
         }
     }
 }

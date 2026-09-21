@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "RemoteConfigGen",
     platforms: [
-        .macOS(.v15),
+        .macOS(.v26),
     ],
     products: [
         .executable(name: "RemoteConfigGen", targets: ["RemoteConfigGen"]),
@@ -13,17 +13,22 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.5.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "6.0.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.6.0"),
     ],
     targets: [
         .executableTarget(
             name: "RemoteConfigGen",
-            dependencies: ["RemoteConfigGenCLI"],
+            dependencies: [
+                "RemoteConfigGenCLI",
+                .product(name: "Logging", package: "swift-log"),
+            ],
         ),
         .target(
             name: "RemoteConfigGenCLI",
             dependencies: [
                 "RemoteConfigGenKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "Logging", package: "swift-log"),
             ],
         ),
         .target(
