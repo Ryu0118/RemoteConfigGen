@@ -15,15 +15,16 @@ struct GenerateRunnerKeyFilteringTests {
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            path: "Generated/FeatureFlag.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         // `firebase remoteconfig:get`が実際に吐く形。conditionalValuesは defaultValue と同じ
-        // フラットな{"value": "..."} / {"useInAppDefault": true}形式で、RemoteConfigConditionalValueの
-        // ような追加のネストは存在しない。description/tagColorはRemoteConfigGenが使わない余剰フィールド。
+        // フラットな{"value": "..."} / {"useInAppDefault": true}形式で、想定より深いネストは存在しない。
+        // description/tagColorはRemoteConfigGenが使わない余剰フィールド。
         try """
         {
           "parameters": {
@@ -46,24 +47,24 @@ struct GenerateRunnerKeyFilteringTests {
         let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
         #expect(result.parameterCount == 1)
 
-        let flagSourceURL = workingDirectory.appending(path: "Generated").appending(path: "FeatureFlag.swift")
+        let flagSourceURL = workingDirectory.appending(path: "Generated/FeatureFlag.swift")
         let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
         #expect(flagSource.contains("case newCheckoutFlowEnabled = \"new_checkout_flow_enabled\""))
     }
 
-    @Test("include_key_prefix excludes bool parameters that don't match the prefix")
-    func includeKeyPrefixFiltersNonMatchingBoolParameters() async throws {
+    @Test("key_prefix excludes bool parameters that don't match the prefix")
+    func keyPrefixFiltersNonMatchingBoolParameters() async throws {
         let workingDirectory = makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        bool_output:
-          include_key_prefix: "feature_flag_"
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            key_prefix: "feature_flag_"
+            path: "Generated/FeatureFlag.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         try """
         {
@@ -83,9 +84,9 @@ struct GenerateRunnerKeyFilteringTests {
 
         try await GenerateRunner(workingDirectory: workingDirectory).run()
 
-        let flagSourceURL = workingDirectory.appending(path: "Generated").appending(path: "FeatureFlag.swift")
+        let flagSourceURL = workingDirectory.appending(path: "Generated/FeatureFlag.swift")
         let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
-        #expect(flagSource.contains("case featureFlagGoalsApiWrite = \"feature_flag_goalsApiWrite\""))
+        #expect(flagSource.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
         #expect(!flagSource.contains("maintenanceModeStudyLegends"))
     }
 
@@ -95,14 +96,14 @@ struct GenerateRunnerKeyFilteringTests {
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        bool_output:
-          strip_key_prefix: "feature_flag_"
-          additional_keys: ["feature_flag_mentorInvitation"]
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            key_prefix: "feature_flag_"
+            additional_keys: ["feature_flag_mentorInvitation"]
+            path: "Generated/FeatureFlag.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         try """
         {
@@ -118,91 +119,10 @@ struct GenerateRunnerKeyFilteringTests {
 
         try await GenerateRunner(workingDirectory: workingDirectory).run()
 
-        let flagSourceURL = workingDirectory.appending(path: "Generated").appending(path: "FeatureFlag.swift")
+        let flagSourceURL = workingDirectory.appending(path: "Generated/FeatureFlag.swift")
         let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
         #expect(flagSource.contains("case mentorInvitation = \"feature_flag_mentorInvitation\""))
         #expect(flagSource.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
-    }
-
-    @Test("non_bool_output.enabled = false skips generating the non-bool namespace entirely")
-    func nonBoolOutputDisabledSkipsGeneration() async throws {
-        let workingDirectory = makeTemporaryDirectory()
-        defer { try? FileManager.default.removeItem(at: workingDirectory) }
-
-        try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        non_bool_output:
-          enabled: false
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
-
-        try """
-        {
-          "parameters": {
-            "new_checkout_flow_enabled": {
-              "defaultValue": {"value": "true"},
-              "valueType": "BOOLEAN"
-            },
-            "welcome_message_variant": {
-              "defaultValue": {"value": "control"},
-              "valueType": "STRING"
-            }
-          },
-          "conditions": []
-        }
-        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
-
-        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
-        #expect(result.writtenFiles.count == 1)
-
-        let generatedDirectory = workingDirectory.appending(path: "Generated")
-        let flagPath = generatedDirectory.appending(path: "FeatureFlag.swift").path()
-        let keysPath = generatedDirectory.appending(path: "RemoteConfigKeys.swift").path()
-        #expect(FileManager.default.fileExists(atPath: flagPath))
-        #expect(!FileManager.default.fileExists(atPath: keysPath))
-    }
-
-    @Test("bool_output.enabled = false skips generating the bool enum entirely, including additional_keys")
-    func boolOutputDisabledSkipsGeneration() async throws {
-        let workingDirectory = makeTemporaryDirectory()
-        defer { try? FileManager.default.removeItem(at: workingDirectory) }
-
-        try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        bool_output:
-          enabled: false
-          additional_keys: ["feature_flag_mentorInvitation"]
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
-
-        try """
-        {
-          "parameters": {
-            "new_checkout_flow_enabled": {
-              "defaultValue": {"value": "true"},
-              "valueType": "BOOLEAN"
-            },
-            "welcome_message_variant": {
-              "defaultValue": {"value": "control"},
-              "valueType": "STRING"
-            }
-          },
-          "conditions": []
-        }
-        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
-
-        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
-        #expect(result.writtenFiles.count == 1)
-
-        let generatedDirectory = workingDirectory.appending(path: "Generated")
-        let flagPath = generatedDirectory.appending(path: "FeatureFlag.swift").path()
-        let keysPath = generatedDirectory.appending(path: "RemoteConfigKeys.swift").path()
-        #expect(!FileManager.default.fileExists(atPath: flagPath))
-        #expect(FileManager.default.fileExists(atPath: keysPath))
     }
 
     @Test("an additional_keys entry that already exists in the template throws duplicateAdditionalKey")
@@ -211,13 +131,13 @@ struct GenerateRunnerKeyFilteringTests {
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        bool_output:
-          additional_keys: ["feature_flag_goalsApiWrite"]
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            additional_keys: ["feature_flag_goalsApiWrite"]
+            path: "Generated/FeatureFlag.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         try """
         {
@@ -235,5 +155,57 @@ struct GenerateRunnerKeyFilteringTests {
         await #expect(throws: RemoteConfigGenError.self) {
             try await runner.run()
         }
+    }
+
+    @Test("multiple enum outputs with different key_prefix values partition the same template")
+    func multipleEnumOutputsPartitionByPrefix() async throws {
+        let workingDirectory = makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workingDirectory) }
+
+        try """
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            key_prefix: "feature_flag_"
+            path: "Generated/FeatureFlag.swift"
+          - type: "enum"
+            name: "MaintenanceFlag"
+            key_prefix: "maintenance_"
+            path: "Generated/MaintenanceFlag.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
+
+        try """
+        {
+          "parameters": {
+            "feature_flag_goalsApiWrite": {
+              "defaultValue": {"value": "true"},
+              "valueType": "BOOLEAN"
+            },
+            "maintenance_studyLegends": {
+              "defaultValue": {"value": "false"},
+              "valueType": "BOOLEAN"
+            }
+          },
+          "conditions": []
+        }
+        """.write(to: workingDirectory.appending(path: "remoteconfig.json"), atomically: true, encoding: .utf8)
+
+        let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
+        #expect(result.writtenFiles.count == 2)
+
+        let flagSource = try String(
+            contentsOf: workingDirectory.appending(path: "Generated/FeatureFlag.swift"),
+            encoding: .utf8,
+        )
+        #expect(flagSource.contains("case goalsApiWrite"))
+        #expect(!flagSource.contains("studyLegends"))
+
+        let maintenanceSource = try String(
+            contentsOf: workingDirectory.appending(path: "Generated/MaintenanceFlag.swift"),
+            encoding: .utf8,
+        )
+        #expect(maintenanceSource.contains("case studyLegends"))
+        #expect(!maintenanceSource.contains("goalsApiWrite"))
     }
 }

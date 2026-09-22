@@ -9,17 +9,20 @@ struct GenerateRunnerTests {
         return dir
     }
 
-    @Test("generates a bool enum and a non-bool namespace from a mixed template")
+    @Test("generates a bool enum and a keys namespace from a mixed template")
     func generatesMixedTemplate() async throws {
         let workingDirectory = makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            path: "Generated/FeatureFlag.swift"
+          - type: "keys"
+            path: "Generated/RemoteConfigKeys.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         try """
         {
@@ -50,14 +53,13 @@ struct GenerateRunnerTests {
         #expect(result.parameterCount == 3)
         #expect(result.writtenFiles.count == 2)
 
-        let generatedDirectory = workingDirectory.appending(path: "Generated")
-        let flagSourceURL = generatedDirectory.appending(path: "FeatureFlag.swift")
+        let flagSourceURL = workingDirectory.appending(path: "Generated/FeatureFlag.swift")
         let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
         #expect(flagSource.contains("enum FeatureFlag: String, CaseIterable, Sendable"))
         #expect(flagSource.contains("case newCheckoutFlowEnabled = \"new_checkout_flow_enabled\""))
         #expect(flagSource.contains("Rollout: `percent('seed') <= 50` (condition: \"fifty_percent_rollout\")"))
 
-        let keysSourceURL = generatedDirectory.appending(path: "RemoteConfigKeys.swift")
+        let keysSourceURL = workingDirectory.appending(path: "Generated/RemoteConfigKeys.swift")
         let keysSource = try String(contentsOf: keysSourceURL, encoding: .utf8)
         #expect(keysSource.contains("enum RemoteConfigKeys"))
         let welcomeVariantDeclaration = "static let welcomeMessageVariant = "
@@ -66,19 +68,19 @@ struct GenerateRunnerTests {
         #expect(keysSource.contains("static let maxUploadSizeMb = RemoteConfigKey<Double>(\"max_upload_size_mb\")"))
     }
 
-    @Test("strip_key_prefix removes the prefix from case names but keeps it in the raw value")
-    func stripKeyPrefixAffectsOnlyCaseNames() async throws {
+    @Test("key_prefix removes the prefix from case names but keeps it in the raw value")
+    func keyPrefixAffectsOnlyCaseNames() async throws {
         let workingDirectory = makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        bool_output:
-          strip_key_prefix: "feature_flag_"
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            key_prefix: "feature_flag_"
+            path: "Generated/FeatureFlag.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         try """
         {
@@ -94,23 +96,25 @@ struct GenerateRunnerTests {
 
         try await GenerateRunner(workingDirectory: workingDirectory).run()
 
-        let generatedDirectory = workingDirectory.appending(path: "Generated")
-        let flagSourceURL = generatedDirectory.appending(path: "FeatureFlag.swift")
+        let flagSourceURL = workingDirectory.appending(path: "Generated/FeatureFlag.swift")
         let flagSource = try String(contentsOf: flagSourceURL, encoding: .utf8)
         #expect(flagSource.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
     }
 
-    @Test("omits the bool file entirely when the template has no boolean parameters")
-    func omitsBoolFileWhenNoBooleanParameters() async throws {
+    @Test("omits an output entirely when no matching parameters exist")
+    func omitsOutputWhenNoMatchingParameters() async throws {
         let workingDirectory = makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        outputs:
+          - type: "enum"
+            name: "FeatureFlag"
+            path: "Generated/FeatureFlag.swift"
+          - type: "keys"
+            path: "Generated/RemoteConfigKeys.swift"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         try """
         {
@@ -128,24 +132,20 @@ struct GenerateRunnerTests {
         #expect(result.parameterCount == 1)
         #expect(result.writtenFiles.count == 1)
 
-        let generatedDirectory = workingDirectory.appending(path: "Generated")
-        let flagPath = generatedDirectory.appending(path: "FeatureFlag.swift").path()
-        let keysPath = generatedDirectory.appending(path: "RemoteConfigKeys.swift").path()
+        let flagPath = workingDirectory.appending(path: "Generated/FeatureFlag.swift").path()
+        let keysPath = workingDirectory.appending(path: "Generated/RemoteConfigKeys.swift").path()
         #expect(!FileManager.default.fileExists(atPath: flagPath))
         #expect(FileManager.default.fileExists(atPath: keysPath))
     }
 
-    @Test("reports the parameter count even when nothing is generated")
-    func reportsParameterCountWhenTemplateIsEmpty() async throws {
+    @Test("an empty outputs list generates nothing but still reports the parameter count")
+    func emptyOutputsGeneratesNothing() async throws {
         let workingDirectory = makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "remoteconfig.json"
-        output:
-          directory: "Generated"
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "remoteconfig.json"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         try """
         {
@@ -157,7 +157,6 @@ struct GenerateRunnerTests {
         let result = try await GenerateRunner(workingDirectory: workingDirectory).run()
         #expect(result.parameterCount == 0)
         #expect(result.writtenFiles.isEmpty)
-        #expect(!FileManager.default.fileExists(atPath: workingDirectory.appending(path: "Generated").path()))
     }
 
     @Test("missing remote config template throws remoteConfigTemplateNotFound")
@@ -166,11 +165,8 @@ struct GenerateRunnerTests {
         defer { try? FileManager.default.removeItem(at: workingDirectory) }
 
         try """
-        input:
-          remote_config_json: "missing.json"
-        output:
-          directory: "Generated"
-        """.write(to: workingDirectory.appending(path: "config.yml"), atomically: true, encoding: .utf8)
+        input: "missing.json"
+        """.write(to: workingDirectory.appending(path: "remote-config-gen.yml"), atomically: true, encoding: .utf8)
 
         let runner = GenerateRunner(workingDirectory: workingDirectory)
 

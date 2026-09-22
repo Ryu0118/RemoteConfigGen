@@ -3,7 +3,7 @@ public struct TypeMapper: Sendable {
     private let unspecifiedFallback: SwiftType
 
     public init(config: GeneratorConfig) {
-        switch config.typeFallback.unspecifiedValueType {
+        switch config.unspecifiedValueType {
         case .string: unspecifiedFallback = .string
         }
     }

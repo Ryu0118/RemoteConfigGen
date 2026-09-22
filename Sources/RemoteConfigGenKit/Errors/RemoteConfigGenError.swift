@@ -13,20 +13,20 @@ public enum RemoteConfigGenError: Error, LocalizedError, Sendable {
     public var errorDescription: String? {
         switch self {
         case let .configNotFound(directory):
-            "No config.yml found in \(directory.path()). Create one with an `input.remote_config_json` and "
-                + "`output.directory` key, or pass --config-directory to point at the directory that contains it."
+            "No remote-config-gen.yml found in \(directory.path()). Create one with an `input` path and "
+                + "at least one entry under `outputs`, or pass --config to point at the file directly."
         case let .invalidConfig(reason):
-            "config.yml is invalid: \(reason)"
+            "remote-config-gen.yml is invalid: \(reason)"
         case let .remoteConfigTemplateNotFound(path):
-            "Remote Config template not found at \(path.path()). Check config.yml's `input.remote_config_json` "
-                + "path, or run `firebase remoteconfig:get` to fetch a fresh template."
+            "Remote Config template not found at \(path.path()). Check remote-config-gen.yml's `input` path, "
+                + "or run `firebase remoteconfig:get` to fetch a fresh template."
         case let .invalidRemoteConfigTemplate(reason):
             "Remote Config template is invalid: \(reason)"
         case let .writeFailed(path):
             "Failed to write generated code to \(path.path()). Check that the output directory is writable."
         case let .duplicateAdditionalKey(key):
-            "`bool_output.additional_keys` contains \"\(key)\", but that key already exists in the Remote "
-                + "Config template. Remove it from `additional_keys` now that it's managed by Remote Config."
+            "An `enum` output's `additional_keys` contains \"\(key)\", but that key already exists in the "
+                + "Remote Config template. Remove it from `additional_keys` now that it's managed by Remote Config."
         }
     }
 }

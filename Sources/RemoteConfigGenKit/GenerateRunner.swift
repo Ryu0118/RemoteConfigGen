@@ -16,23 +16,42 @@ public struct GenerateRunner: Sendable {
         templateLoader = RemoteConfigTemplateLoader(fileManager: fileManager)
     }
 
-    /// config.yml読込からファイル書き出しまでを一通り実行する。
+    /// remote-config-gen.yml読込からファイル書き出しまでを一通り実行する。
     public func run() async throws -> GenerateResult {
         let config = try configLoader.load(from: workingDirectory)
-        let templatePath = workingDirectory.appending(path: config.input.remoteConfigJSON)
+        let templatePath = workingDirectory.appending(path: config.input)
         let template = try templateLoader.load(from: templatePath)
 
-        let generatedFiles = try generatedFiles(from: template, config: config)
+        let typeMapper = TypeMapper(config: config)
+        let conditionExpressions = Dictionary(
+            uniqueKeysWithValues: template.conditions.map { ($0.name, $0.expression) },
+        )
+        let namedParameters = template.parameters
+            .sorted { $0.key < $1.key }
+            .map { key, parameter in
+                NamedParameter(
+                    key: key,
+                    swiftType: typeMapper.swiftType(for: parameter.valueType),
+                    conditionalValueKeys: Array(parameter.conditionalValues.keys),
+                )
+            }
 
-        let outputDirectory = workingDirectory.appending(path: config.output.directory)
         var writtenFiles: [URL] = []
-        for file in generatedFiles {
-            let destination = outputDirectory.appending(path: file.fileName)
+        for output in config.outputs {
+            let generated = try generate(
+                output: output,
+                config: config,
+                parameters: namedParameters,
+                conditionExpressions: conditionExpressions,
+            )
+            guard let generated else { continue }
+
+            let destination = workingDirectory.appending(path: generated.path)
             try fileManager.createDirectory(
                 at: destination.deletingLastPathComponent(),
                 withIntermediateDirectories: true,
             )
-            guard fileManager.createFile(atPath: destination.path(), contents: Data(file.source.utf8)) else {
+            guard fileManager.createFile(atPath: destination.path(), contents: Data(generated.source.utf8)) else {
                 throw RemoteConfigGenError.writeFailed(path: destination)
             }
             writtenFiles.append(destination)
@@ -41,72 +60,50 @@ public struct GenerateRunner: Sendable {
         return GenerateResult(parameterCount: template.parameters.count, writtenFiles: writtenFiles)
     }
 
-    /// config.ymlとRemote Configテンプレートから、書き出すべき生成コードを計算する（ファイルI/Oは行わない）。
-    private func generatedFiles(
-        from template: RemoteConfigTemplate,
+    /// 1つの`OutputConfig`から生成コードを組み立てる（ファイルI/Oは行わない）。対象parameterが
+    /// 0件の場合は`nil`を返し、空ファイルの書き出しを避ける。
+    private func generate(
+        output: GeneratorConfig.OutputConfig,
         config: GeneratorConfig,
-    ) throws -> [(fileName: String, source: String)] {
-        let typeMapper = TypeMapper(config: config)
-        let conditionExpressions = Dictionary(
-            uniqueKeysWithValues: template.conditions.map { ($0.name, $0.expression) },
-        )
+        parameters: [NamedParameter],
+        conditionExpressions: [String: String],
+    ) throws -> (path: String, source: String)? {
+        switch output {
+        case let .enumOutput(enumOutput):
+            var boolParameters = parameters
+                .filter { $0.swiftType == .bool }
+                .filter { matchesKeyPrefix($0.key, keyPrefix: enumOutput.keyPrefix) }
 
-        var boolParameters: [NamedParameter] = []
-        var nonBoolParameters: [NamedParameter] = []
-        for (key, parameter) in template.parameters.sorted(by: { $0.key < $1.key }) {
-            let swiftType = typeMapper.swiftType(for: parameter.valueType)
-            if swiftType == .bool {
-                guard config.boolOutput.enabled, matchesIncludeKeyPrefix(key, config: config) else { continue }
-            } else {
-                guard config.nonBoolOutput.enabled else { continue }
-            }
-            let named = NamedParameter(
-                key: key,
-                swiftType: swiftType,
-                conditionalValueKeys: Array(parameter.conditionalValues.keys),
-            )
-            if swiftType == .bool {
-                boolParameters.append(named)
-            } else {
-                nonBoolParameters.append(named)
-            }
-        }
-
-        if config.boolOutput.enabled {
-            for key in config.boolOutput.additionalKeys.sorted() {
-                guard template.parameters[key] == nil else {
+            for key in enumOutput.additionalKeys.sorted() {
+                guard !parameters.contains(where: { $0.key == key }) else {
                     throw RemoteConfigGenError.duplicateAdditionalKey(key: key)
                 }
                 boolParameters.append(NamedParameter(key: key, swiftType: .bool))
             }
             boolParameters.sort { $0.key < $1.key }
-        }
 
-        var result: [(fileName: String, source: String)] = []
-
-        if !boolParameters.isEmpty {
-            let source = BoolEnumGenerator(config: config).generate(
+            guard !boolParameters.isEmpty else { return nil }
+            let source = BoolEnumGenerator(config: config, output: enumOutput).generate(
                 parameters: boolParameters,
                 conditionExpressions: conditionExpressions,
             )
-            result.append((config.boolOutput.resolvedFileName, source))
-        }
+            return (enumOutput.path, source)
 
-        if !nonBoolParameters.isEmpty {
-            let source = NonBoolKeysGenerator(config: config).generate(
+        case let .keysOutput(keysOutput):
+            let nonBoolParameters = parameters.filter { $0.swiftType != .bool }
+            guard !nonBoolParameters.isEmpty else { return nil }
+            let source = NonBoolKeysGenerator(config: config, output: keysOutput).generate(
                 parameters: nonBoolParameters,
                 conditionExpressions: conditionExpressions,
             )
-            result.append((config.nonBoolOutput.resolvedFileName, source))
+            return (keysOutput.path, source)
         }
-
-        return result
     }
 
-    /// `includeKeyPrefix`が未指定なら常に対象。指定されていれば、keyがその接頭辞で始まる場合のみ対象。
-    private func matchesIncludeKeyPrefix(_ key: String, config: GeneratorConfig) -> Bool {
-        guard let includeKeyPrefix = config.boolOutput.includeKeyPrefix else { return true }
-        return key.hasPrefix(includeKeyPrefix)
+    /// `keyPrefix`が未指定なら常に対象。指定されていれば、keyがその接頭辞で始まる場合のみ対象。
+    private func matchesKeyPrefix(_ key: String, keyPrefix: String?) -> Bool {
+        guard let keyPrefix else { return true }
+        return key.hasPrefix(keyPrefix)
     }
 }
 

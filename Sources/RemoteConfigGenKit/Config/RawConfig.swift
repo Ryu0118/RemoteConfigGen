@@ -1,86 +1,44 @@
-/// YAMLのキー名（snake_case）をそのままデコードするための中間表現。全フィールドoptionalにし、
-/// 未指定を「defaultを使う」と「明示的に無効化した」で区別できるようにする。
+/// YAMLのキー名（snake_case）をそのままデコードするための中間表現。トップレベルの必須フィールドは
+/// `input`のみで、それ以外はoptionalにし、未指定を「defaultを使う」で扱う。
 struct RawConfig: Decodable {
-    let input: RawInput?
-    let output: RawOutput?
-    let naming: RawNaming?
-    let boolOutput: RawBoolOutput?
-    let nonBoolOutput: RawNonBoolOutput?
-    let typeFallback: RawTypeFallback?
-    let documentation: RawDocumentation?
+    let input: String?
+    let outputs: [RawOutput]?
+    let accessLevel: String?
+    let headerComment: String?
+    let includeConditionSummary: Bool?
+    let unspecifiedValueType: String?
 
     enum CodingKeys: String, CodingKey {
         case input
-        case output
-        case naming
-        case boolOutput = "bool_output"
-        case nonBoolOutput = "non_bool_output"
-        case typeFallback = "type_fallback"
-        case documentation
-    }
-}
-
-struct RawInput: Decodable {
-    let remoteConfigJSON: String?
-    enum CodingKeys: String, CodingKey { case remoteConfigJSON = "remote_config_json" }
-}
-
-struct RawOutput: Decodable {
-    let directory: String?
-    let accessLevel: String?
-    let headerComment: String?
-    enum CodingKeys: String, CodingKey {
-        case directory
+        case outputs
         case accessLevel = "access_level"
         case headerComment = "header_comment"
+        case includeConditionSummary = "include_condition_summary"
+        case unspecifiedValueType = "unspecified_value_type"
     }
 }
 
-struct RawNaming: Decodable {
-    let caseConvention: String?
-    enum CodingKeys: String, CodingKey { case caseConvention = "case_convention" }
-}
-
-struct RawBoolOutput: Decodable {
-    let enabled: Bool?
-    let fileName: String?
-    let enumName: String?
+/// `outputs`の1エントリ。`type: enum` / `type: keys`で後続フィールドの意味が変わる。
+struct RawOutput: Decodable {
+    let type: String?
+    let name: String?
+    let keyPrefix: String?
+    let additionalKeys: [String]?
+    let path: String?
     let rawValue: Bool?
     let conformances: [String]?
-    let stripKeyPrefix: String?
-    let includeKeyPrefix: String?
-    let additionalKeys: [String]?
-    enum CodingKeys: String, CodingKey {
-        case enabled
-        case fileName = "file_name"
-        case enumName = "enum_name"
-        case rawValue = "raw_value"
-        case conformances
-        case stripKeyPrefix = "strip_key_prefix"
-        case includeKeyPrefix = "include_key_prefix"
-        case additionalKeys = "additional_keys"
-    }
-}
-
-struct RawNonBoolOutput: Decodable {
-    let enabled: Bool?
-    let fileName: String?
     let namespace: String?
     let keyType: String?
+
     enum CodingKeys: String, CodingKey {
-        case enabled
-        case fileName = "file_name"
+        case type
+        case name
+        case keyPrefix = "key_prefix"
+        case additionalKeys = "additional_keys"
+        case path
+        case rawValue = "raw_value"
+        case conformances
         case namespace
         case keyType = "key_type"
     }
-}
-
-struct RawTypeFallback: Decodable {
-    let unspecifiedValueType: String?
-    enum CodingKeys: String, CodingKey { case unspecifiedValueType = "unspecified_value_type" }
-}
-
-struct RawDocumentation: Decodable {
-    let includeConditionSummary: Bool?
-    enum CodingKeys: String, CodingKey { case includeConditionSummary = "include_condition_summary" }
 }
