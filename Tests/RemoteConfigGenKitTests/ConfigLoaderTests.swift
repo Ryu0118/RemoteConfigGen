@@ -25,16 +25,16 @@ struct ConfigLoaderTests {
             input: "firebase/remoteconfig.production.json"
             output: "Generated/RemoteConfigKeys.swift"
             additional_namespaces:
-              FeatureFlag:
-                key_prefix: "feature_flag_"
-                additional_keys: ["feature_flag_mentorInvitation"]
+              CustomNamespace:
+                key_prefix: "custom_"
+                additional_keys: ["custom_generatedOnly"]
             """,
         )
 
         #expect(config.additionalNamespaces.count == 1)
-        #expect(config.additionalNamespaces["FeatureFlag"] == .init(
-            keyPrefix: "feature_flag_",
-            additionalKeys: ["feature_flag_mentorInvitation"],
+        #expect(config.additionalNamespaces["CustomNamespace"] == .init(
+            keyPrefix: "custom_",
+            additionalKeys: ["custom_generatedOnly"],
         ))
     }
 

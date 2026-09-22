@@ -75,14 +75,14 @@ struct GenerateRunnerKeyFilteringTests {
             input: "remoteconfig.json"
             output: "Generated/RemoteConfigKeys.swift"
             additional_namespaces:
-              FeatureFlag:
-                key_prefix: "feature_flag_"
+              CustomNamespace:
+                key_prefix: "custom_"
             """,
             template: """
             {
               "parameters": {
-                "feature_flag_goalsApiWrite": {"valueType": "BOOLEAN"},
-                "maintenanceModeStudyLegends": {"valueType": "BOOLEAN"}
+                "custom_primaryAction": {"valueType": "BOOLEAN"},
+                "maintenanceMode": {"valueType": "BOOLEAN"}
               },
               "conditions": []
             }
@@ -95,9 +95,9 @@ struct GenerateRunnerKeyFilteringTests {
             contentsOf: workingDirectory.appending(path: "Generated/RemoteConfigKeys.swift"),
             encoding: .utf8,
         )
-        #expect(source.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
-        #expect(source.contains("case maintenanceModeStudyLegends"))
-        #expect(source.components(separatedBy: "feature_flag_goalsApiWrite").count == 2)
+        #expect(source.contains("case primaryAction = \"custom_primaryAction\""))
+        #expect(source.contains("case maintenanceMode"))
+        #expect(source.components(separatedBy: "custom_primaryAction").count == 2)
     }
 
     @Test("additional keys use the type inferred from the matching parameters")
@@ -144,13 +144,13 @@ struct GenerateRunnerKeyFilteringTests {
             input: "remoteconfig.json"
             output: "Generated/RemoteConfigKeys.swift"
             additional_namespaces:
-              FeatureFlag:
-                key_prefix: "feature_flag_"
+              CustomNamespace:
+                key_prefix: "custom_"
             """,
             template: """
             {
               "parameters": {
-                "maintenanceModeStudyLegends": {"valueType": "BOOLEAN"}
+                "maintenanceMode": {"valueType": "BOOLEAN"}
               },
               "conditions": []
             }
@@ -203,14 +203,14 @@ struct GenerateRunnerKeyFilteringTests {
             input: "remoteconfig.json"
             output: "Generated/RemoteConfigKeys.swift"
             additional_namespaces:
-              FeatureFlag:
-                key_prefix: "feature_flag_"
-                additional_keys: ["feature_flag_goalsApiWrite"]
+              CustomNamespace:
+                key_prefix: "custom_"
+                additional_keys: ["custom_primaryAction"]
             """,
             template: """
             {
               "parameters": {
-                "feature_flag_goalsApiWrite": {"valueType": "BOOLEAN"}
+                "custom_primaryAction": {"valueType": "BOOLEAN"}
               },
               "conditions": []
             }

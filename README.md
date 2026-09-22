@@ -87,9 +87,9 @@ swift run remote-config-gen generate
    output: Sources/RemoteConfigKeys/Generated/RemoteConfigKeys.swift
 
    additional_namespaces:
-     FeatureFlag:
-       key_prefix: feature_flag_
-       additional_keys: [feature_flag_localOnly]
+     CustomNamespace:
+       key_prefix: custom_
+       additional_keys: [custom_generatedOnly]
    ```
 
 3. Generate the Swift file from the repository root:
@@ -115,9 +115,9 @@ input: firebase/remoteconfig.production.json
 output: Sources/RemoteConfigKeys/Generated/RemoteConfigKeys.swift
 
 additional_namespaces:
-  FeatureFlag:
-    key_prefix: feature_flag_
-    additional_keys: [feature_flag_localOnly]
+  CustomNamespace:
+    key_prefix: custom_
+    additional_keys: [custom_generatedOnly]
 ```
 
 ### Top-level fields
@@ -158,7 +158,7 @@ means the key has moved into Remote Config and the configuration is stale.
 
 ## What gets generated
 
-For a template containing ordinary parameters and `feature_flag_*` boolean
+For a template containing ordinary parameters and `custom_*` boolean
 parameters, `RemoteConfigKeys.swift` has this shape:
 
 ```swift
@@ -166,7 +166,7 @@ parameters, `RemoteConfigKeys.swift` has this shape:
 
 public enum RemoteConfigKeys {
     public enum BooleanKeys: String, CaseIterable, Sendable {
-        case maintenanceModeStudyLegends
+        case maintenanceMode
     }
     public enum StringKeys: String, CaseIterable, Sendable {
         case forceUpdateVersion
@@ -175,11 +175,11 @@ public enum RemoteConfigKeys {
         case maxUploadSizeMb
     }
     public enum JSONKeys: String, CaseIterable, Sendable {
-        case banWords
+        case blockedWords
     }
-    public enum FeatureFlag: String, CaseIterable, Sendable {
-        case goalsApiWrite = "feature_flag_goalsApiWrite"
-        case localOnly = "feature_flag_localOnly"
+    public enum CustomNamespace: String, CaseIterable, Sendable {
+        case example = "custom_example"
+        case generatedOnly = "custom_generatedOnly"
     }
 }
 ```

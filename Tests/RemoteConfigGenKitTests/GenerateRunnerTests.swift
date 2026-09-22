@@ -7,23 +7,23 @@ struct GenerateRunnerTests {
     input: "remoteconfig.json"
     output: "Generated/RemoteConfigKeys.swift"
     additional_namespaces:
-      FeatureFlag:
-        key_prefix: "feature_flag_"
-        additional_keys: ["feature_flag_mentorInvitation"]
+      CustomNamespace:
+        key_prefix: "custom_"
+        additional_keys: ["custom_generatedOnly"]
     """
 
     private let mixedTemplate = """
     {
       "parameters": {
-        "feature_flag_goalsApiWrite": {
+        "custom_primaryAction": {
           "defaultValue": {"value": "true"},
           "valueType": "BOOLEAN"
         },
-        "feature_flag_timelineApiFetch": {
+        "custom_secondaryAction": {
           "defaultValue": {"value": "false"},
           "valueType": "BOOLEAN"
         },
-        "maintenanceModeStudyLegends": {
+        "maintenanceMode": {
           "defaultValue": {"value": "false"},
           "valueType": "BOOLEAN"
         },
@@ -31,7 +31,7 @@ struct GenerateRunnerTests {
           "defaultValue": {"value": "1.0.0"},
           "valueType": "STRING"
         },
-        "forceUpdateVersionStudyLegends": {
+        "fallbackVersion": {
           "defaultValue": {"value": "1.0.0"},
           "valueType": "STRING"
         },
@@ -39,7 +39,7 @@ struct GenerateRunnerTests {
           "defaultValue": {"value": "50"},
           "valueType": "NUMBER"
         },
-        "banWords": {
+        "blockedWords": {
           "defaultValue": {"value": "[\\"spoiler\\"]"},
           "valueType": "JSON"
         }
@@ -82,18 +82,18 @@ struct GenerateRunnerTests {
 
         #expect(source.contains("public enum RemoteConfigKeys {"))
         #expect(source.contains("public enum BooleanKeys: String, CaseIterable, Sendable {"))
-        #expect(source.contains("case maintenanceModeStudyLegends"))
+        #expect(source.contains("case maintenanceMode"))
         #expect(source.contains("public enum StringKeys: String, CaseIterable, Sendable {"))
         #expect(source.contains("case forceUpdateVersion"))
         #expect(source.contains("public enum NumberKeys: String, CaseIterable, Sendable {"))
         #expect(source.contains("case maxUploadSizeMb"))
         #expect(source.contains("public enum JSONKeys: String, CaseIterable, Sendable {"))
-        #expect(source.contains("case banWords"))
-        #expect(source.contains("public enum FeatureFlag: String, CaseIterable, Sendable {"))
-        #expect(source.contains("case goalsApiWrite = \"feature_flag_goalsApiWrite\""))
-        #expect(source.contains("case timelineApiFetch = \"feature_flag_timelineApiFetch\""))
-        #expect(source.contains("case mentorInvitation = \"feature_flag_mentorInvitation\""))
-        #expect(source.components(separatedBy: "feature_flag_goalsApiWrite").count == 2)
+        #expect(source.contains("case blockedWords"))
+        #expect(source.contains("public enum CustomNamespace: String, CaseIterable, Sendable {"))
+        #expect(source.contains("case primaryAction = \"custom_primaryAction\""))
+        #expect(source.contains("case secondaryAction = \"custom_secondaryAction\""))
+        #expect(source.contains("case generatedOnly = \"custom_generatedOnly\""))
+        #expect(source.components(separatedBy: "custom_primaryAction").count == 2)
     }
 
     @Test("writes an empty wrapper when the template has no parameters")

@@ -22,6 +22,8 @@ output shapes (not hardcoded). See README for design rationale and output format
   (remoteconfig.json parsing), `TypeMapping/` (valueType → Swift type), `CodeGeneration/`
   (enum/static-let source generation, sharing `EnumSourceBuilder` for the common
   header/declaration/doc-comment scaffolding)
+- Keep README and documentation examples repository-neutral. Use placeholder namespaces, prefixes,
+  and keys; do not copy names from a downstream consumer project into this library's documentation.
 - CLI logs through `swift-log` (`Logging` product); `remote-config-gen` (the executable target)
   bootstraps `StreamLogHandler.standardOutput` once at startup — without that bootstrap call,
   `Logger` calls are silently dropped

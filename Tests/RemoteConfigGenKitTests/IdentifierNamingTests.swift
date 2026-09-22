@@ -15,13 +15,13 @@ struct IdentifierNamingTests {
 
     @Test("strips the given prefix before converting")
     func stripsPrefixBeforeConverting() {
-        let result = IdentifierNaming.camelCase(from: "feature_flag_goalsApiWrite", stripPrefix: "feature_flag_")
-        #expect(result == "goalsApiWrite")
+        let result = IdentifierNaming.camelCase(from: "custom_primaryAction", stripPrefix: "custom_")
+        #expect(result == "primaryAction")
     }
 
     @Test("leaves the key untouched when the prefix does not match")
     func leavesKeyUntouchedWhenPrefixDoesNotMatch() {
-        let result = IdentifierNaming.camelCase(from: "onboarding_variant", stripPrefix: "feature_flag_")
+        let result = IdentifierNaming.camelCase(from: "onboarding_variant", stripPrefix: "custom_")
         #expect(result == "onboardingVariant")
     }
 
