@@ -8,10 +8,10 @@ extension RemoteConfigGenCommand {
     struct GenerateCommand: AsyncParsableCommand {
         static let configuration = CommandConfiguration(
             commandName: "generate",
-            abstract: "Read config.yml in the current directory and generate Swift bindings.",
+            abstract: "Read remote-config-gen.yml in the current directory and generate Swift bindings.",
         )
 
-        @Option(name: .long, help: "Directory containing config.yml. Defaults to the current directory.")
+        @Option(name: .long, help: "Directory containing remote-config-gen.yml. Defaults to the current directory.")
         var configDirectory: String?
 
         func run() async throws {

@@ -3,7 +3,7 @@ enum IdentifierNaming {
     /// `new_checkout_flow_enabled` -> `newCheckoutFlowEnabled`
     ///
     /// `stripPrefix`が指定され、かつ`key`がその接頭辞から始まる場合、変換前に接頭辞を取り除く
-    /// （例: `stripPrefix: "feature_flag_"`、key `feature_flag_goalsApiWrite` -> `goalsApiWrite`）。
+    /// （例: `stripPrefix: "custom_"`、key `custom_primaryAction` -> `primaryAction`）。
     /// 接頭辞に一致しないkeyはそのまま変換する。
     static func camelCase(from key: String, stripPrefix: String? = nil) -> String {
         var key = key

@@ -1,19 +1,24 @@
-/// `RemoteConfigValueType` を `SwiftType` へ変換する。
+/// `RemoteConfigValueType`をSwiftの型やdefault namespace分類へ変換する。
 public struct TypeMapper: Sendable {
-    private let unspecifiedFallback: SwiftType
+    public init() {}
 
-    public init(config: GeneratorConfig) {
-        switch config.unspecifiedValueType {
-        case .string: unspecifiedFallback = .string
+    /// `valueType`が`nil`またはUNSPECIFIEDの場合もStringとして扱う。
+    public func normalizedValueType(for valueType: RemoteConfigValueType?) -> RemoteConfigValueType {
+        switch valueType {
+        case .boolean: .boolean
+        case .number: .number
+        case .json: .json
+        case .string, .unspecified, nil: .string
         }
     }
 
-    /// `valueType`が`nil`（Consoleで未指定）の場合もUNSPECIFIEDと同じ扱いにする。
+    /// `valueType`が対応するSwiftの値型を返す。
     public func swiftType(for valueType: RemoteConfigValueType?) -> SwiftType {
-        switch valueType {
+        switch normalizedValueType(for: valueType) {
         case .boolean: .bool
         case .number: .double
-        case .string, .json, .unspecified, nil: unspecifiedFallback
+        case .json, .string: .string
+        case .unspecified: .string
         }
     }
 }

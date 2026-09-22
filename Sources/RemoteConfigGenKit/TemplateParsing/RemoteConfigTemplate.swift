@@ -84,7 +84,7 @@ public enum RemoteConfigDefaultValue: Decodable, Equatable, Sendable {
 }
 
 /// Firebase Remote Configのparameter値型。
-public enum RemoteConfigValueType: String, Decodable, Equatable, Sendable {
+public enum RemoteConfigValueType: String, Decodable, Equatable, Hashable, Sendable {
     case boolean = "BOOLEAN"
     case string = "STRING"
     case number = "NUMBER"
