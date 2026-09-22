@@ -2,11 +2,9 @@
 import Testing
 
 struct TypeMapperTests {
-    private func makeConfig() -> GeneratorConfig {
-        GeneratorConfig(input: "a.json")
-    }
+    private let mapper = TypeMapper()
 
-    @Test("BOOLEAN maps to Bool", arguments: [
+    @Test("maps Firebase value types to the Swift types used by callers", arguments: [
         (RemoteConfigValueType.boolean, SwiftType.bool),
         (.number, .double),
         (.string, .string),
@@ -14,13 +12,17 @@ struct TypeMapperTests {
         (.unspecified, .string),
     ])
     func mapsKnownValueTypes(valueType: RemoteConfigValueType, expected: SwiftType) {
-        let mapper = TypeMapper(config: makeConfig())
         #expect(mapper.swiftType(for: valueType) == expected)
     }
 
-    @Test("nil valueType falls back to the same rule as UNSPECIFIED")
+    @Test("missing value metadata uses the String mapping")
     func nilValueTypeFallsBackToString() {
-        let mapper = TypeMapper(config: makeConfig())
         #expect(mapper.swiftType(for: nil) == .string)
+    }
+
+    @Test("normalizes unspecified and missing value types to STRING")
+    func normalizesUnknownValueTypes() {
+        #expect(mapper.normalizedValueType(for: .unspecified) == .string)
+        #expect(mapper.normalizedValueType(for: nil) == .string)
     }
 }
