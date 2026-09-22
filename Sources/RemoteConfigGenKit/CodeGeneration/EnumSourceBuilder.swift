@@ -14,11 +14,11 @@ enum EnumSourceBuilder {
         conditionExpressions: [String: String],
     ) -> String {
         var lines: [String] = []
-        lines.append("// \(config.output.headerComment)")
+        lines.append("// \(config.headerComment)")
         lines.append("")
         lines.append(declarationLine)
         for member in members {
-            if config.documentation.includeConditionSummary {
+            if config.includeConditionSummary {
                 let conditionLines = ConditionSummary.lines(
                     conditionalValueKeys: Array(member.parameter.conditionalValueKeys),
                     conditionExpressions: conditionExpressions,
@@ -32,16 +32,5 @@ enum EnumSourceBuilder {
         lines.append("}")
         lines.append("")
         return lines.joined(separator: "\n")
-    }
-}
-
-extension GeneratorConfig.AccessLevel {
-    /// 宣言の先頭に置く文字列。`internal`は明示不要なので空文字（末尾スペース無し）。
-    var declarationPrefix: String {
-        switch self {
-        case .public: "public "
-        case .package: "package "
-        case .internal: ""
-        }
     }
 }

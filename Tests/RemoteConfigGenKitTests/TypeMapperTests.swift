@@ -3,7 +3,7 @@ import Testing
 
 struct TypeMapperTests {
     private func makeConfig() -> GeneratorConfig {
-        GeneratorConfig(input: .init(remoteConfigJSON: "a.json"), output: .init(directory: "Generated"))
+        GeneratorConfig(input: "a.json")
     }
 
     @Test("BOOLEAN maps to Bool", arguments: [
