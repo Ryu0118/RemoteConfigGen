@@ -1,37 +1,23 @@
 # 🔑 RemoteConfigGen
 
-**Type-safe Swift bindings for Firebase Remote Config, generated from your template.**
+**Type-safe Swift key enums generated from a Firebase Remote Config template.**
 
-[![Swift](https://img.shields.io/badge/Swift-6.2-F05138?logo=swift&logoColor=white)](https://swift.org)
-[![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-lightgrey)](https://developer.apple.com/macos/)
+Firebase Remote Config keys are strings. A hand-maintained list can silently
+drift from the template, so RemoteConfigGen reads the JSON exported by
+`firebase remoteconfig:get` and generates the complete key list from that one
+source of truth.
 
-Firebase Remote Config keys are strings. Every app that reads them ends up
-with a hand-maintained enum or a pile of `"the_exact_key_string"` literals
-scattered across the codebase — a typo anywhere compiles fine and just quietly
-returns the default. RemoteConfigGen reads the same template JSON Firebase
-itself exports (`firebase remoteconfig:get`) and generates the Swift side from
-it, so the key list has exactly one source of truth and a renamed or removed
-parameter is a compile error, not a runtime surprise.
-
-- 🔒 **One source of truth.** The template your team already manages in
-  Firebase Console (or in git, via `firebase remoteconfig:get`) is the input.
-  Nothing about key names or types is retyped by hand.
-- 🧩 **The right shape per value type.** Boolean parameters become a
-  `CaseIterable` enum; every other value type (String/Double/JSON) becomes a
-  namespaced, typed key — because a single enum can't mix case types, and
-  flags are what most callers actually branch on.
-- 📎 **Rollout context, not rollout logic.** If a parameter has a percent
-  rollout or another condition attached, the generated code carries a doc
-  comment naming it. Evaluating the condition stays Firebase's job at
-  runtime — RemoteConfigGen never re-implements that.
-- ⚙️ **Nothing hardcoded.** Output directory, access level, enum/namespace
-  names, the wrapper type, naming convention — all config-driven, so this
-  isn't tied to any one project's conventions.
+- 🔒 The Firebase template is the source of truth for key names and value types.
+- 🧩 Keys are grouped into nested enums by `BOOLEAN`, `STRING`, `NUMBER`, and
+  `JSON` value type.
+- 📎 A namespace with a `key_prefix` can extract a related set of keys while
+  keeping those keys out of the default groups.
+- ⚙️ The generated API is deliberately small: every generated key is a
+  `String` raw-value enum case.
 
 ## Table of Contents
 
 - [Installation](#installation)
-  - [Other methods](#other-methods)
 - [Quick Start](#quick-start)
 - [remote-config-gen.yml Reference](#remote-config-genyml-reference)
 - [What gets generated](#what-gets-generated)
@@ -49,7 +35,7 @@ To update, run the same command. It skips the download if already up-to-date.
 
 ```sh
 # Install a specific version
-curl -fsSL https://raw.githubusercontent.com/Ryu0118/RemoteConfigGen/main/install.sh | VERSION=0.1.0 bash
+curl -fsSL https://raw.githubusercontent.com/Ryu0118/RemoteConfigGen/main/install.sh | VERSION=0.7.0 bash
 
 # Force reinstall
 curl -fsSL https://raw.githubusercontent.com/Ryu0118/RemoteConfigGen/main/install.sh | FORCE=1 bash
@@ -80,7 +66,7 @@ swift build -c release
 cp .build/release/remote-config-gen /usr/local/bin/remote-config-gen
 ```
 
-Or run it directly from a checkout without installing:
+Or run it directly from a checkout:
 
 ```sh
 swift run remote-config-gen generate
@@ -88,136 +74,119 @@ swift run remote-config-gen generate
 
 ## Quick Start
 
-1. Get a copy of your Remote Config template as JSON — the same file
-   `firebase remoteconfig:get` writes:
+1. Export the Remote Config template that Firebase manages:
 
    ```sh
    firebase remoteconfig:get --output firebase/remoteconfig.production.json
    ```
 
-2. Add a `remote-config-gen.yml` at your repository root:
+2. Add `remote-config-gen.yml` to the repository root:
 
    ```yaml
-   input: "firebase/remoteconfig.production.json"
+   input: firebase/remoteconfig.production.json
+   output: Sources/RemoteConfigKeys/Generated/RemoteConfigKeys.swift
 
-   outputs:
-     - type: enum
-       name: FeatureFlag
-       key_prefix: "feature_flag_"
-       path: "Sources/RemoteConfigKeys/Generated/FeatureFlag.swift"
+   additional_namespaces:
+     FeatureFlag:
+       key_prefix: feature_flag_
+       additional_keys: [feature_flag_localOnly]
    ```
 
-3. Generate:
+3. Generate the Swift file from the repository root:
 
    ```sh
    remote-config-gen generate
    ```
 
-   This reads `remote-config-gen.yml` from the current directory (or pass
-   `--config-directory <path>` to point elsewhere), and writes each entry in
-   `outputs` to its own `path`.
+   The paths in the configuration are relative to the directory containing
+   `remote-config-gen.yml`. `--config-directory <path>` can be used when the
+   command is run from another directory.
 
-Run it the same way you'd run SwiftGen: as a step in `mise run gen` (or
-whatever your project's codegen task is called), not interactively.
+Run this as part of the project's code generation task, such as `mise run gen`.
 
 ## remote-config-gen.yml Reference
 
-Only `input` is required. `outputs` is a plain list — you write one entry
-per file you want, and nothing is generated beyond what's listed (no
-opt-out flags to fight with).
+The schema has one required input path, one required output path, and an
+optional map of additional namespaces. There is no output list, type selector,
+opt-out flag, or repeated output path.
 
 ```yaml
-# ── required ──
-input: "firebase/remoteconfig.production.json"
+input: firebase/remoteconfig.production.json
+output: Sources/RemoteConfigKeys/Generated/RemoteConfigKeys.swift
 
-# ── one entry per generated file ──
-outputs:
-  - type: enum                                    # BOOLEAN parameters -> a Swift enum
-    name: FeatureFlag
-    path: "Sources/RemoteConfigKeys/Generated/FeatureFlag.swift"
-    key_prefix: "feature_flag_"                    # optional: filters keys AND strips this prefix from case names
-    additional_keys: []                             # optional: full key strings to include even if absent from the template
-    raw_value: true                                 # optional (default true): keep the Remote Config key as a String raw value
-    conformances: ["CaseIterable", "Sendable"]       # optional (shown default)
-
-  - type: keys                                     # every other value type (String/Double/JSON) -> namespaced typed keys
-    path: "Sources/RemoteConfigKeys/Generated/RemoteConfigKeys.swift"
-    namespace: RemoteConfigKeys                      # optional (shown default)
-    key_type: RemoteConfigKey                         # optional (shown default): wrapper type name
-
-# ── optional, apply to every output (defaults shown) ──
-access_level: public                                # public | package | internal
-header_comment: "Auto-generated by RemoteConfigGen. Do not edit."
-include_condition_summary: true                     # surface rollout conditions as doc comments
-unspecified_value_type: string                       # type used when Firebase Console left a value type unset
+additional_namespaces:
+  FeatureFlag:
+    key_prefix: feature_flag_
+    additional_keys: [feature_flag_localOnly]
 ```
 
-Most projects only need a single `enum` entry — feature flags are what
-callers actually branch on, so that's the common case. Add a `keys` entry
-only if you also want typed access to non-boolean parameters. Skip a
-section entirely and nothing is generated for it; there's no `enabled` flag
-to remember to flip.
+### Top-level fields
 
-`key_prefix` does two things with one value: it filters which BOOLEAN
-parameters this output includes, and it's the prefix stripped from case
-names. If your template mixes flags with unrelated BOOLEAN config (e.g. a
-`maintenanceMode` toggle sitting next to your `feature_flag_*` keys),
-`key_prefix` keeps the unrelated ones out. If you have two independent flag
-namespaces in the same template, add two `enum` outputs, each with its own
-`key_prefix` and `path`.
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `input` | Yes | Path to the Firebase Remote Config JSON, relative to the config directory. |
+| `output` | Yes | Path of the single generated Swift file, relative to the config directory. |
+| `additional_namespaces` | No | Map from generated nested enum name to namespace options. |
 
-`additional_keys` lists flags that don't live in Remote Config at all — one
-gated purely by build environment, for instance — so it still gets a `case`
-in the generated enum instead of living in a hand-maintained extension.
-Entries are full key strings (same `key_prefix` stripping applies to them),
-and it's an error for one to also exist in the template — that means the
-flag has moved to Remote Config and the entry is now stale.
+### Namespace fields
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `key_prefix` | No | Only parameters starting with this prefix are extracted. The prefix is also removed from their case names. If omitted, all parameters are candidates. |
+| `additional_keys` | No | Full key strings that are not present in the JSON but should be added to the generated enum. |
+
+The default namespace is generated from every parameter in the template. A
+parameter is placed in one of these nested enums according to its value type:
+
+- `BOOLEAN` → `BooleanKeys`
+- `STRING` → `StringKeys`
+- `NUMBER` → `NumberKeys`
+- `JSON` → `JSONKeys`
+
+Empty groups are omitted. A missing or `PARAMETER_VALUE_TYPE_UNSPECIFIED`
+value type is treated as `STRING`.
+
+Each entry under `additional_namespaces` must match at least one template
+parameter. All matched parameters must have the same value type; otherwise
+generation fails because the namespace's type cannot be inferred. Matched
+parameters are removed from the default groups, so a raw key appears in only
+one generated enum. `additional_keys` use the type inferred from the matched
+parameters and are included even though they are absent from the template.
+
+An `additional_keys` entry that already exists in the template is an error. It
+means the key has moved into Remote Config and the configuration is stale.
 
 ## What gets generated
 
-Given a template with a boolean flag under a 50% rollout and two plain
-parameters:
-
-```json
-{
-  "parameters": {
-    "new_checkout_flow_enabled": {
-      "defaultValue": { "value": "true" },
-      "valueType": "BOOLEAN",
-      "conditionalValues": { "fifty_percent_rollout": { "value": "false" } }
-    },
-    "welcome_message_variant": { "defaultValue": { "value": "control" }, "valueType": "STRING" },
-    "max_upload_size_mb": { "defaultValue": { "value": "50" }, "valueType": "NUMBER" }
-  },
-  "conditions": [
-    { "name": "fifty_percent_rollout", "expression": "percent('seed') <= 50" }
-  ]
-}
-```
-
-`remote-config-gen generate` writes:
+For a template containing ordinary parameters and `feature_flag_*` boolean
+parameters, `RemoteConfigKeys.swift` has this shape:
 
 ```swift
-// FeatureFlag.swift
-public enum FeatureFlag: String, CaseIterable, Sendable {
-    /// Rollout: `percent('seed') <= 50` (condition: "fifty_percent_rollout")
-    case newCheckoutFlowEnabled = "new_checkout_flow_enabled"
-}
-```
+// Auto-generated by RemoteConfigGen. Do not edit.
 
-```swift
-// RemoteConfigKeys.swift
 public enum RemoteConfigKeys {
-    public static let welcomeMessageVariant = RemoteConfigKey<String>("welcome_message_variant")
-    public static let maxUploadSizeMb = RemoteConfigKey<Double>("max_upload_size_mb")
+    public enum BooleanKeys: String, CaseIterable, Sendable {
+        case maintenanceModeStudyLegends
+    }
+    public enum StringKeys: String, CaseIterable, Sendable {
+        case forceUpdateVersion
+    }
+    public enum NumberKeys: String, CaseIterable, Sendable {
+        case maxUploadSizeMb
+    }
+    public enum JSONKeys: String, CaseIterable, Sendable {
+        case banWords
+    }
+    public enum FeatureFlag: String, CaseIterable, Sendable {
+        case goalsApiWrite = "feature_flag_goalsApiWrite"
+        case localOnly = "feature_flag_localOnly"
+    }
 }
 ```
 
-`RemoteConfigKey<T>` isn't defined by RemoteConfigGen — it's a small wrapper
-type you write once in your own codebase (just a key name plus a phantom
-type), matching whatever your `RemoteConfigClient`/SDK wrapper expects. This
-keeps RemoteConfigGen decoupled from any particular Remote Config client
-implementation.
+The case name is derived from the key. For an additional namespace, its
+`key_prefix` is removed before the case name is converted to lower camel case.
+The raw value always remains the complete Remote Config key.
 
 ## Commands
 
@@ -226,7 +195,7 @@ remote-config-gen generate [--config-directory <path>]
 ```
 
 `generate` is also the default subcommand, so `remote-config-gen` with no
-arguments does the same thing as `remote-config-gen generate`.
+arguments performs the same generation.
 
 ## Development
 

@@ -18,7 +18,7 @@ output shapes (not hardcoded). See README for design rationale and output format
   (ArgumentParser command definitions) → `RemoteConfigGenKit` (all business logic, testable)
 - Command/Runner split: a `Command.run()` in CLI validates arguments and delegates to a
   `*Runner` in Kit; it holds no logic of its own
-- Kit is organized by domain, not by layer: `Config/` (config.yml parsing), `TemplateParsing/`
+- Kit is organized by domain, not by layer: `Config/` (`remote-config-gen.yml` parsing), `TemplateParsing/`
   (remoteconfig.json parsing), `TypeMapping/` (valueType → Swift type), `CodeGeneration/`
   (enum/static-let source generation, sharing `EnumSourceBuilder` for the common
   header/declaration/doc-comment scaffolding)
