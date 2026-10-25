@@ -1,8 +1,8 @@
 import FileManagerProtocol
 import Foundation
 
-/// `generate`コマンドの実処理。設定読込、template parse、partition、コード生成、
-/// ファイル書き出しを順に実行する。
+/// Performs the `generate` command: load the config, parse the template, partition keys,
+/// generate code, and write the file, in that order.
 public struct GenerateRunner: Sendable {
     private let workingDirectory: URL
     private let fileManager: any FileManagerProtocol
@@ -17,7 +17,7 @@ public struct GenerateRunner: Sendable {
         templateLoader = RemoteConfigTemplateLoader(fileManager: fileManager)
     }
 
-    /// `remote-config-gen.yml`読込からファイル書き出しまでを一通り実行する。
+    /// Runs the full sequence from loading `remote-config-gen.yml` through writing the output file.
     public func run() async throws -> GenerateResult {
         let config = try configLoader.load(from: workingDirectory)
         let templatePath = workingDirectory.appending(path: config.input)
@@ -165,10 +165,10 @@ private extension GenerateRunner {
     }
 }
 
-/// `GenerateRunner.run()`の結果。templateのparameter総数と、実際に書き出したファイルを持つ。
+/// Result of `GenerateRunner.run()`, including the template parameter count and written files.
 public struct GenerateResult: Equatable, Sendable {
-    /// Remote Config templateに含まれていたparameterの総数。
+    /// Number of parameters in the Remote Config template.
     public let parameterCount: Int
-    /// 実際に書き出した生成ファイルのURL一覧。
+    /// URLs of the generated files that were actually written.
     public let writtenFiles: [URL]
 }

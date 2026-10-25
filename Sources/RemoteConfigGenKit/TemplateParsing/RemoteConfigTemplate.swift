@@ -1,10 +1,10 @@
 import Foundation
 
-/// Firebase Remote Configのテンプレートエクスポート形式（`firebase remoteconfig:get`の出力）。
+/// Firebase Remote Config template export (the output of `firebase remoteconfig:get`).
 public struct RemoteConfigTemplate: Decodable, Equatable, Sendable {
-    /// parameter key名をキーとするparameter定義の辞書。
+    /// Parameter definitions keyed by parameter name.
     public var parameters: [String: RemoteConfigParameter]
-    /// テンプレートが持つcondition一覧。
+    /// Conditions declared on the template.
     public var conditions: [RemoteConfigCondition]
 
     public init(parameters: [String: RemoteConfigParameter], conditions: [RemoteConfigCondition]) {
@@ -24,15 +24,15 @@ public struct RemoteConfigTemplate: Decodable, Equatable, Sendable {
     }
 }
 
-/// 1つのRemote Configパラメータの定義。
+/// Definition of a single Remote Config parameter.
 public struct RemoteConfigParameter: Decodable, Equatable, Sendable {
-    /// 既定値。
+    /// The default value.
     public var defaultValue: RemoteConfigDefaultValue?
-    /// Firebase Consoleで設定された値の型。未指定の場合は`nil`。
+    /// Value type set in the Firebase console. `nil` when it is not specified.
     public var valueType: RemoteConfigValueType?
-    /// condition名をキーとするconditional value（段階ロールアウト等）の辞書。`defaultValue`と同じ
-    /// `{"value": "..."}` / `{"useInAppDefault": true}`形式（Firebase Remote Config REST APIの
-    /// `RemoteConfigParameterValue`と同型）。
+    /// Conditional values keyed by condition name, such as staged rollouts. Uses the same
+    /// `{"value": "..."}` or `{"useInAppDefault": true}` shape as `defaultValue` (the
+    /// Firebase Remote Config REST API `RemoteConfigParameterValue` type).
     public var conditionalValues: [String: RemoteConfigDefaultValue]
 
     public init(
@@ -63,7 +63,8 @@ public struct RemoteConfigParameter: Decodable, Equatable, Sendable {
     }
 }
 
-/// `defaultValue`は `{"value": "..."}` （静的値）または `{"useInAppDefault": true}`（アプリ内既定値を使う）のいずれか。
+/// A default value is either `{"value": "..."}` (a static value) or
+/// `{"useInAppDefault": true}` (use the in-app default).
 public enum RemoteConfigDefaultValue: Decodable, Equatable, Sendable {
     case value(String)
     case useInAppDefault
@@ -83,7 +84,7 @@ public enum RemoteConfigDefaultValue: Decodable, Equatable, Sendable {
     }
 }
 
-/// Firebase Remote Configのparameter値型。
+/// Firebase Remote Config parameter value type.
 public enum RemoteConfigValueType: String, Decodable, Equatable, Hashable, Sendable {
     case boolean = "BOOLEAN"
     case string = "STRING"
@@ -92,11 +93,11 @@ public enum RemoteConfigValueType: String, Decodable, Equatable, Hashable, Senda
     case unspecified = "PARAMETER_VALUE_TYPE_UNSPECIFIED"
 }
 
-/// Remote Configのcondition定義（percent rollout等）。
+/// A Remote Config condition, such as a percent rollout.
 public struct RemoteConfigCondition: Decodable, Equatable, Sendable {
-    /// condition名。parameterの`conditionalValues`のキーと対応する。
+    /// Condition name. Corresponds to a key in a parameter's `conditionalValues`.
     public var name: String
-    /// condition式（例: `percent('seed') <= 50`）。
+    /// Condition expression (for example, `percent('seed') <= 50`).
     public var expression: String
 
     public init(name: String, expression: String) {

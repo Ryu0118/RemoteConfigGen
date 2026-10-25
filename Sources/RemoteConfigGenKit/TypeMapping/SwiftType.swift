@@ -1,10 +1,10 @@
-/// Remote Configのparameterが対応するSwiftの型。
+/// Swift type that corresponds to a Remote Config parameter.
 public enum SwiftType: Equatable, Sendable {
     case bool
     case double
     case string
 
-    /// 生成コード中の型名（`RemoteConfigKey<Bool>`のジェネリック引数等に使う）。
+    /// Type name used in generated code, such as the generic argument of `RemoteConfigKey<Bool>`.
     public var typeName: String {
         switch self {
         case .bool: "Bool"
