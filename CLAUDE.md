@@ -33,3 +33,8 @@ output shapes (not hardcoded). See README for design rationale and output format
 - Swift 6 strict-concurrency compatible; default to package-internal access, `public` only when
   another module needs the symbol
 - Doc comments required for public APIs (this project writes them in English, not Japanese)
+
+## Documentation and code
+
+- When documentation and the existing code disagree, follow the conventions used in the existing code,
+  and in your final reply list every inconsistency you found between the documentation and the code.
