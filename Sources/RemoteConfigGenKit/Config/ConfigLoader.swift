@@ -2,7 +2,7 @@ import FileManagerProtocol
 import Foundation
 import Yams
 
-/// カレントディレクトリの `remote-config-gen.yml` を読み込み `GeneratorConfig` へ変換する。
+/// Loads `remote-config-gen.yml` from a directory and converts it into a `GeneratorConfig`.
 public struct ConfigLoader: Sendable {
     private let fileManager: any FileManagerProtocol
 
@@ -10,7 +10,7 @@ public struct ConfigLoader: Sendable {
         self.fileManager = fileManager
     }
 
-    /// `directory/remote-config-gen.yml`を読み込む。
+    /// Loads `directory/remote-config-gen.yml`.
     public func load(from directory: URL) throws -> GeneratorConfig {
         let configPath = directory.appending(path: "remote-config-gen.yml")
         guard let data = fileManager.contents(atPath: configPath.path()) else {

@@ -1,7 +1,7 @@
 import FileManagerProtocol
 import Foundation
 
-/// `remote_config_json` で指定されたパスから `RemoteConfigTemplate` を読み込む。
+/// Loads a `RemoteConfigTemplate` from a file path.
 public struct RemoteConfigTemplateLoader: Sendable {
     private let fileManager: any FileManagerProtocol
 
@@ -9,7 +9,7 @@ public struct RemoteConfigTemplateLoader: Sendable {
         self.fileManager = fileManager
     }
 
-    /// 指定したパスからRemote Configテンプレートを読み込む。ファイルが無ければ `.remoteConfigTemplateNotFound` を投げる。
+    /// Loads the template at `path`. Throws `.remoteConfigTemplateNotFound` when the file is missing.
     public func load(from path: URL) throws -> RemoteConfigTemplate {
         guard let data = fileManager.contents(atPath: path.path()) else {
             throw RemoteConfigGenError.remoteConfigTemplateNotFound(path: path)

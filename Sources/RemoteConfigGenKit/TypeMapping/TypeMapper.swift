@@ -1,8 +1,8 @@
-/// `RemoteConfigValueType`をSwiftの型やdefault namespace分類へ変換する。
+/// Converts a `RemoteConfigValueType` into a Swift type and a default-namespace group.
 public struct TypeMapper: Sendable {
     public init() {}
 
-    /// `valueType`が`nil`またはUNSPECIFIEDの場合もStringとして扱う。
+    /// Treats `nil` and `.unspecified` as `.string`.
     public func normalizedValueType(for valueType: RemoteConfigValueType?) -> RemoteConfigValueType {
         switch valueType {
         case .boolean: .boolean
@@ -12,7 +12,7 @@ public struct TypeMapper: Sendable {
         }
     }
 
-    /// `valueType`が対応するSwiftの値型を返す。
+    /// Returns the Swift value type for `valueType`.
     public func swiftType(for valueType: RemoteConfigValueType?) -> SwiftType {
         switch normalizedValueType(for: valueType) {
         case .boolean: .bool

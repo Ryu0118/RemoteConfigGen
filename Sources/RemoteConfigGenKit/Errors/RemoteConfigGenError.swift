@@ -1,6 +1,6 @@
 import Foundation
 
-/// エラー全般を表す型。原因と対処法を1文で説明する。
+/// An error from RemoteConfigGen. The description states the cause and the fix in one sentence.
 public enum RemoteConfigGenError: Error, LocalizedError, Sendable {
     case configNotFound(directory: URL)
     case invalidConfig(reason: String)
@@ -12,7 +12,7 @@ public enum RemoteConfigGenError: Error, LocalizedError, Sendable {
     case additionalNamespaceHasMixedValueTypes(namespace: String)
     case additionalNamespaceOverlaps(namespace: String, key: String)
 
-    /// 原因と対処法を1文で説明するメッセージ。
+    /// A message that states the cause and the fix in one sentence.
     public var errorDescription: String? {
         switch self {
         case let .configNotFound(directory):
